@@ -76,7 +76,7 @@ apt-get install cmake flex bison
 
 ### Use with built-in Tartiflette Engine
 
-The basic and common way to create an `aiohttp` instance is to use the `Application` class with the `engine_*` parameters which are forwarded to the built-in [tartiflette](https://github.com/dailymotion/tartiflette) engine instance.
+The basic and common way to use Tartiflette with aiohttp, is to create an aiohttp `web.Application` and use the `register_graphql_handlers` helper to bind Tartiflette and aiohttp together. `engine_*` parameters will be forwarded to the built-in [tartiflette](https://github.com/dailymotion/tartiflette) engine instance.
 
 ```python
 from aiohttp import web
@@ -120,7 +120,7 @@ web.run_app(
 
 ### Use with custom Tartiflette engine
 
-In the case you already have a Tartiflette Engine instance, or, you do not want to use the built-in instance. You can pass an existing instance to the Application constructor.
+In the case you already have a Tartiflette Engine instance, or, you do not want to use the built-in instance. You can pass an existing instance to the `register_graphql_handlers` helper.
 
 ```python
 # main.py
