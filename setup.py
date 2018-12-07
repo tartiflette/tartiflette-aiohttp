@@ -7,6 +7,7 @@ _TEST_REQUIRE = [
     "pytest",
     "pytest-cov",
     "pytest-asyncio",
+    "asynctest",
     "pytz",
     "pylint==2.2.0",
     "xenon",

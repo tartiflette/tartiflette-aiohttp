@@ -43,7 +43,7 @@ async def _handle_query(req, query, query_vars, _query_name, context):
         return {"data": None, "errors": _format_errors([e])}
 
 
-def _get_params(req):
+async def _get_params(req):
     if "query" not in req.query:
         raise BadRequestError('The mandatory "query" parameter is missing.')
 
@@ -86,13 +86,13 @@ async def _post_params(req):
 
 class Handlers:
     @staticmethod
-    async def handle_get(user_context, req):
-        user_context["req"] = req
+    async def _handle(param_func, user_c, req):
+        user_c["req"] = req
 
         try:
-            qry, qry_vars, qry_name = _get_params(req)
+            qry, qry_vars, qry_name = await param_func(req)
             return prepare_response(
-                await _handle_query(req, qry, qry_vars, qry_name, user_context)
+                await _handle_query(req, qry, qry_vars, qry_name, user_c)
             )
         except BadRequestError as e:
             return prepare_response(
@@ -100,15 +100,9 @@ class Handlers:
             )
 
     @staticmethod
-    async def handle_post(user_context, req):
-        user_context["req"] = req
+    async def handle_get(user_context, req):
+        return await Handlers._handle(_get_params, user_context, req)
 
-        try:
-            qry, qry_vars, qry_name = await _post_params(req)
-            return prepare_response(
-                await _handle_query(req, qry, qry_vars, qry_name, user_context)
-            )
-        except BadRequestError as e:
-            return prepare_response(
-                {"data": None, "errors": _format_errors([e])}
-            )
+    @staticmethod
+    async def handle_post(user_context, req):
+        return await Handlers._handle(_post_params, user_context, req)
