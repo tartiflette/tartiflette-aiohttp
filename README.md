@@ -17,7 +17,7 @@
 # main.py
 from aiohttp import web
 from tartiflette import Resolver
-from tartiflette_aiohttp import GraphqlHandlers
+from tartiflette_aiohttp import register_graphql_handlers
 
 @Resolver("Query.hello")
 async def resolver_hello(parent, args, ctx, info):
@@ -29,11 +29,12 @@ sdl = """
     }
 """
 
-app = web.Application()
-
-GraphqlHandlers.register_app(webapp=app, engine_sdl=sdl)
-
-web.run_app(app)
+web.run_app(
+    register_graphql_handlers(
+        web.Application(),
+        engine_sdl=sdl
+    )
+)
 ```
 
 Save the file and start the server.
@@ -79,7 +80,7 @@ The basic and common way to create an `aiohttp` instance is to use the `Applicat
 
 ```python
 from aiohttp import web
-from tartiflette_aiohttp import Application
+from tartiflette_aiohttp import register_graphql_handlers
 
 sdl = """
     type Query {
@@ -91,18 +92,16 @@ ctx = {
     'user_service': user_service
 }
 
-app = web.Application()
-
-GraphqlHandlers.register_app(
-    webapp=app,
-    engine_sdl=sdl,
-    engine_schema_name="default",
-    executor_context=ctx,
-    executor_http_endpoint='/graphql',
-    executor_http_methods=['POST', 'GET']
+web.run_app(
+    register_graphql_handlers(
+        app=web.Application(),
+        engine_sdl=sdl,
+        engine_schema_name="default",
+        executor_context=ctx,
+        executor_http_endpoint='/graphql',
+        executor_http_methods=['POST', 'GET']
+    )
 )
-
-web.run_app(app)
 ```
 
 **Parameters**:
@@ -127,7 +126,7 @@ In the case you already have a Tartiflette Engine instance, or, you do not want 
 # main.py
 from aiohttp import web
 from tartiflette import Resolver, Engine
-from tartiflette_aiohttp import GraphqlHandlers
+from tartiflette_aiohttp import register_graphql_handlers
 
 @Resolver("Query.hello")
 async def resolver_hello(parent, args, ctx, info):
@@ -145,17 +144,15 @@ ctx = {
     'user_service': user_service
 }
 
-app = web.Application()
-
-GraphqlHandlers.register_app(
-    webapp=app,
-    engine=engine,
-    executor_context=ctx,
-    executor_http_endpoint='/graphql',
-    executor_http_methods=['POST', 'GET']
+web.run_app(
+    register_graphql_handlers(
+        app=web.Application(),
+        engine=engine,
+        executor_context=ctx,
+        executor_http_endpoint='/graphql',
+        executor_http_methods=['POST', 'GET']
+    )
 )
-
-web.run_app(app)
 ```
 
 **Parameters**:

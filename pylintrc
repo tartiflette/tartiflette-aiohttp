@@ -53,8 +53,6 @@ max-public-methods=30
 
 max-attributes=15
 
-max-parents=8
-
 [FORMAT]
 max-line-length=80
 
