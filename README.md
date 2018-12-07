@@ -31,7 +31,7 @@ sdl = """
 
 app = web.Application()
 
-GraphqlHandlers.register_app(engine_sdl=sdl, webapp=app)
+GraphqlHandlers.register_app(webapp=app, engine_sdl=sdl)
 
 web.run_app(app)
 ```
@@ -94,12 +94,12 @@ ctx = {
 app = web.Application()
 
 GraphqlHandlers.register_app(
+    webapp=app,
     engine_sdl=sdl,
     engine_schema_name="default",
     executor_context=ctx,
     executor_http_endpoint='/graphql',
-    executor_http_methods=['POST', 'GET'],
-    webapp=app
+    executor_http_methods=['POST', 'GET']
 )
 
 web.run_app(app)
@@ -148,11 +148,11 @@ ctx = {
 app = web.Application()
 
 GraphqlHandlers.register_app(
+    webapp=app,
     engine=engine,
     executor_context=ctx,
     executor_http_endpoint='/graphql',
-    executor_http_methods=['POST', 'GET'],
-    webapp=app
+    executor_http_methods=['POST', 'GET']
 )
 
 web.run_app(app)

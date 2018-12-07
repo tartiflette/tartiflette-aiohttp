@@ -1,3 +1,3 @@
-from tartiflette_aiohttp.application import Application
+from tartiflette_aiohttp.graphqlhandlers import GraphqlHandlers
 
-__all__ = ["Application"]
+__all__ = ["GraphqlHandlers"]

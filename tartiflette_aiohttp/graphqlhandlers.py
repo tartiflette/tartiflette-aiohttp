@@ -1,23 +1,22 @@
 from functools import partial
 from typing import List
 
-from aiohttp.web import Application as AioHttpApplication
 from tartiflette import Engine
 from tartiflette_aiohttp._handler import Handlers
 
 
-class Application(AioHttpApplication):
-    def __init__(
-        self,
+class GraphqlHandlers:
+    @staticmethod
+    def register_appclass(
+        webapp,
         engine_sdl: str = None,
         engine_schema_name: str = "default",
         executor_context: dict = None,
         executor_http_endpoint: str = "/graphql",
         executor_http_methods: List[str] = None,
         engine: Engine = None,
-        **kwargs,
     ):
-        """Creates an aiohttp application with an integrated Tartiflette Engine
+        """register a Tartiflette Engine to a webapp
 
         Pass a SDL or an already initialized Engine, not both, not neither.
 
@@ -34,8 +33,6 @@ class Application(AioHttpApplication):
             Exception -- On unsupported HTTP Method.
         """
 
-        super().__init__(**kwargs)
-
         if (not engine_sdl and not engine) or (engine and engine_sdl):
             raise Exception(
                 "an engine OR an engine_sdl should be passed here, not both, not none"
@@ -44,7 +41,7 @@ class Application(AioHttpApplication):
         if not executor_context:
             executor_context = {}
 
-        executor_context["app"] = self
+        executor_context["app"] = webapp
 
         if not executor_http_methods:
             executor_http_methods = ["GET", "POST"]
@@ -52,11 +49,11 @@ class Application(AioHttpApplication):
         if not engine:
             engine = Engine(engine_sdl, engine_schema_name)
 
-        self["ttftt_engine"] = engine
+        webapp["ttftt_engine"] = engine
 
         for method in executor_http_methods:
             try:
-                self.router.add_route(
+                webapp.router.add_route(
                     method,
                     executor_http_endpoint,
                     partial(
