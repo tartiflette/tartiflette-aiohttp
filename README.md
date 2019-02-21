@@ -117,6 +117,7 @@ web.run_app(
   - **app**: Application object from aiohttp
 * **executor_http_endpoint**: Endpoint where the GraphQL Engine will be attached, by default on `/graphql`
 * **executor_http_methods**: HTTP Method where the GraphQL Engine will be attached, by default on **POST** and **GET**.
+* **graphiql_endpoint**: Endpoint where the GraphiQL page will be attached, by default there is no GraphiQL page
 
 ### Use with custom Tartiflette engine
 
@@ -158,8 +159,9 @@ web.run_app(
 **Parameters**:
 
 * **engine**: Tartiflette Engine instance
-* **executor_context**: Context which will be passed to each resolver. Be default, the context passed to each resolvers, will contain these properties.
+* **executor_context**: Context which will be passed to each resolver. Be default, the context passed to each resolvers, will contain these properties
   - **req**: Request object from aiohttp
   - **app**: Application object from aiohttp
 * **executor_http_endpoint**: Endpoint where the GraphQL Engine will be attached, by default on `/graphql`
-* **executor_http_methods**: HTTP Method where the GraphQL Engine will be attached, by default on **POST** and **GET**.
+* **executor_http_methods**: HTTP Method where the GraphQL Engine will be attached, by default on **POST** and **GET**
+* **graphiql_endpoint**: Endpoint where the GraphiQL page will be attached, by default there is no GraphiQL page
