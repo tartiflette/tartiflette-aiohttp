@@ -1,8 +1,25 @@
 from functools import partial
-from typing import List
+from typing import List, Optional
 
 from tartiflette import Engine
+
+from tartiflette_aiohttp._graphiql import graphiql_handler
 from tartiflette_aiohttp._handler import Handlers
+
+
+def _set_graphiql_handler(
+    app, graphiql_endpoint, executor_http_endpoint, executor_http_methods
+):
+    if graphiql_endpoint is not None:
+        app.router.add_route(
+            "GET",
+            graphiql_endpoint,
+            partial(
+                graphiql_handler,
+                executor_http_endpoint=executor_http_endpoint,
+                executor_http_methods=executor_http_methods,
+            ),
+        )
 
 
 def register_graphql_handlers(
@@ -13,6 +30,7 @@ def register_graphql_handlers(
     executor_http_endpoint: str = "/graphql",
     executor_http_methods: List[str] = None,
     engine: Engine = None,
+    graphiql_endpoint: Optional[str] = None,
 ):
     """register a Tartiflette Engine to an app
 
@@ -26,6 +44,7 @@ def register_graphql_handlers(
         executor_http_endpoint {str} -- Path part of the URL the graphql endpoint will listen on (default: {"/graphql"})
         executor_http_methods {list[str]} -- List of HTTP methods allowed on the endpoint (only GET and POST are supported) (default: {None})
         engine {Engine} -- An already initialized Engine (default: {None})
+        graphiql_endpoint {str} -- Add a GraphiQL view to this path if defined (default: {None})
 
     Raises:
         Exception -- On bad sdl/engine parameter combinaison.
@@ -65,6 +84,10 @@ def register_graphql_handlers(
             )
         except AttributeError:
             raise Exception("Unsupported < %s > http method" % method)
+
+    _set_graphiql_handler(
+        app, graphiql_endpoint, executor_http_endpoint, executor_http_methods
+    )
 
     return app
 
