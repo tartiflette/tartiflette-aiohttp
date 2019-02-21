@@ -1,7 +1,5 @@
-import subprocess
-import os
-import sys
 from setuptools import find_packages, setup
+
 
 _TEST_REQUIRE = [
     "pytest",
