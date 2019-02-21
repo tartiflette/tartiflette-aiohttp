@@ -1,13 +1,17 @@
-from string import Template
+import os
 
-import pkg_resources
+from string import Template
 
 from aiohttp import web
 
 
-_GRAPHIQL_TEMPLATE = pkg_resources.resource_string(
-    __name__, "_graphiql.html"
-).decode("utf-8")
+try:
+    _TTFTT_AIOHTTP_DIR = os.path.dirname(__file__)
+
+    with open(os.path.join(_TTFTT_AIOHTTP_DIR, "_graphiql.html")) as tpl_file:
+        _GRAPHIQL_TEMPLATE = tpl_file.read()
+except Exception as e:  # pylint: disable=broad-except
+    _GRAPHIQL_TEMPLATE = ""
 
 
 async def graphiql_handler(
