@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Release]
 
+### [0.2.1] - 2019-02-21
+
+- Add an optional GraphiQL view handler.
+
 ### [0.2.0] - 2019-01-14
 
 - Update Tartiflette deps to 0.3.x
