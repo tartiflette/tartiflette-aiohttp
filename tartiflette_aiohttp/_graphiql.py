@@ -1,9 +1,9 @@
 import os
 
 from string import Template
+from typing import Dict, Any
 
 from aiohttp import web
-
 
 try:
     _TTFTT_AIOHTTP_DIR = os.path.dirname(__file__)
@@ -15,17 +15,20 @@ except Exception as e:  # pylint: disable=broad-except
 
 
 async def graphiql_handler(
-    request, executor_http_endpoint, executor_http_methods
-):
+    request, graphiql_options: Dict[str, Any]
+) -> "Response":
     # pylint: disable=unused-argument
     return web.Response(
-        text=_render_graphiql(executor_http_endpoint, executor_http_methods),
+        text=_render_graphiql(graphiql_options),
         headers={"Content-Type": "text/html"},
     )
 
 
-def _render_graphiql(executor_http_endpoint, executor_http_methods):
+def _render_graphiql(graphiql_options: Dict[str, Any]) -> str:
     return Template(_GRAPHIQL_TEMPLATE).substitute(
-        endpoint_url=executor_http_endpoint,
-        http_method=("POST" if "POST" in executor_http_methods else "GET"),
+        endpoint=graphiql_options["endpoint"],
+        http_method=graphiql_options["http_method"],
+        default_query=graphiql_options["query"],
+        default_variables=graphiql_options["variables"],
+        default_headers=graphiql_options["headers"],
     )
