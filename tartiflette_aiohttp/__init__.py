@@ -1,20 +1,85 @@
+import json
+
 from functools import partial
-from typing import List
+from typing import List, Optional, Dict, Any
 
 from tartiflette import Engine
+from tartiflette_aiohttp._graphiql import graphiql_handler
 from tartiflette_aiohttp._handler import Handlers
 
 
+def validate_and_compute_graphiql_option(
+    raw_value: Any, option_name: str, default_value: str, indent: int = 0
+) -> str:
+    if not raw_value:
+        return default_value
+
+    if not isinstance(raw_value, dict):
+        raise TypeError(
+            f"< graphiql_options.{option_name} > parameter should be a dict."
+        )
+
+    try:
+        return json.dumps(raw_value, indent=indent)
+    except Exception as e:  # pylint: disable=broad-except
+        raise ValueError(
+            f"Unable to jsonify < graphiql_options.{option_name} value. "
+            f"Error: {e}."
+        )
+
+
+def _set_graphiql_handler(
+    app: "Application",
+    graphiql_enabled: bool,
+    graphiql_options: Optional[Dict[str, Any]],
+    executor_http_endpoint: str,
+    executor_http_methods: List[str],
+) -> None:
+    if not graphiql_enabled:
+        return
+
+    if graphiql_options is None:
+        graphiql_options = {}
+
+    app.router.add_route(
+        "GET",
+        graphiql_options.get("endpoint", "/graphiql"),
+        partial(
+            graphiql_handler,
+            graphiql_options={
+                "endpoint": executor_http_endpoint,
+                "query": graphiql_options.get("default_query") or "",
+                "variables": validate_and_compute_graphiql_option(
+                    graphiql_options.get("default_variables"),
+                    "default_variables",
+                    "",
+                    2,
+                ),
+                "headers": validate_and_compute_graphiql_option(
+                    graphiql_options.get("default_headers"),
+                    "default_headers",
+                    "{}",
+                ),
+                "http_method": "POST"
+                if "POST" in executor_http_methods
+                else "GET",
+            },
+        ),
+    )
+
+
 def register_graphql_handlers(
-    app,
+    app: "Application",
     engine_sdl: str = None,
     engine_schema_name: str = "default",
     executor_context: dict = None,
     executor_http_endpoint: str = "/graphql",
     executor_http_methods: List[str] = None,
     engine: Engine = None,
-):
-    """register a Tartiflette Engine to an app
+    graphiql_enabled: bool = False,
+    graphiql_options: Optional[Dict[str, Any]] = None,
+) -> "Application":
+    """Register a Tartiflette Engine to an app
 
     Pass a SDL or an already initialized Engine, not both, not neither.
 
@@ -26,6 +91,8 @@ def register_graphql_handlers(
         executor_http_endpoint {str} -- Path part of the URL the graphql endpoint will listen on (default: {"/graphql"})
         executor_http_methods {list[str]} -- List of HTTP methods allowed on the endpoint (only GET and POST are supported) (default: {None})
         engine {Engine} -- An already initialized Engine (default: {None})
+        graphiql_enabled {bool} -- Determines whether or not we should handle a GraphiQL endpoint (default: {False})
+        graphiql_options {dict} -- Customization options for the GraphiQL instance (default: {None})
 
     Raises:
         Exception -- On bad sdl/engine parameter combinaison.
@@ -34,7 +101,7 @@ def register_graphql_handlers(
     Return:
         The app object.
     """
-
+    # pylint: disable=too-many-arguments
     if (not engine_sdl and not engine) or (engine and engine_sdl):
         raise Exception(
             "an engine OR an engine_sdl should be passed here, not both, not none"
@@ -65,6 +132,14 @@ def register_graphql_handlers(
             )
         except AttributeError:
             raise Exception("Unsupported < %s > http method" % method)
+
+    _set_graphiql_handler(
+        app,
+        graphiql_enabled,
+        graphiql_options,
+        executor_http_endpoint,
+        executor_http_methods,
+    )
 
     return app
 

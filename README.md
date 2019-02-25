@@ -158,8 +158,64 @@ web.run_app(
 **Parameters**:
 
 * **engine**: Tartiflette Engine instance
-* **executor_context**: Context which will be passed to each resolver. Be default, the context passed to each resolvers, will contain these properties.
+* **executor_context**: Context which will be passed to each resolver. Be default, the context passed to each resolvers, will contain these properties
   - **req**: Request object from aiohttp
   - **app**: Application object from aiohttp
 * **executor_http_endpoint**: Endpoint where the GraphQL Engine will be attached, by default on `/graphql`
-* **executor_http_methods**: HTTP Method where the GraphQL Engine will be attached, by default on **POST** and **GET**.
+* **executor_http_methods**: HTTP Method where the GraphQL Engine will be attached, by default on **POST** and **GET**
+
+### Enable GraphiQL handler
+
+Tartiflette allows you to set up an instance of GraphiQL easily to quickly test
+your queries. The easiest way to do that is to set the `graphiql_enabled`
+parameter to `True`. Then, you can customize your GraphiQL instance by filling
+the `graphiql_options` parameter as bellow:
+
+```python
+from aiohttp import web
+
+from tartiflette_aiohttp import register_graphql_handlers
+
+
+_SDL = """
+    type Query {
+        hello(name: String): String
+    }
+"""
+
+web.run_app(
+    register_graphql_handlers(
+        app=web.Application(),
+        engine_sdl=_SDL,
+        graphiql_enabled=True,
+        graphiql_options={  # This is optional
+            "endpoint": "/explorer",  # Default: `/graphiql`,
+            "default_query": """
+                query Hello($name: String) {
+                  hello(name: $name)
+                }
+            """,
+            "default_variables": {
+                "name": "Bob",
+            },
+            "default_headers": {
+                "Authorization": "Bearer <default_token>",
+            },
+        },
+    )
+)
+```
+
+**Parameters**:
+
+* **engine_sdl**: Contains the [Schema Definition Language](https://graphql.org/learn/schema/)
+  - Could be a string which contains the SDL
+  - Could be an array of string, which contain the SDLs
+  - Could be a path of an SDL
+  - Could be an array of paths which contain the SDLs
+* **graphiql_enabled** *(Optional[bool] = False)*: Determines whether or not we should handle a GraphiQL endpoint
+* **graphiql_options** *(Optional[dict] = None)*: Customization options for the GraphiQL instance:
+  - **endpoint** *(Optional[str] = "/graphiql")*: allows to customize the GraphiQL endpoint
+  - **default_query** *(Optional[str] = None)*: allows you to pre-fill the GraphiQL interface with a default query
+  - **default_variables** *(Optional[dict] = None)*: allows you to pre-fill the GraphiQL interface with default variables
+  - **default_headers** *(Optional[dict] = None)*: allows you to add default headers to each request sent through the GraphiQL instance
