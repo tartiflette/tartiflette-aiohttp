@@ -168,7 +168,7 @@ web.run_app(
 
 ### Tartiflette with subscriptions
 
-Tartiflette embed an easy way to deal with subscription. The only thing to do is
+Tartiflette embeds an easy way to deal with subscription. The only thing to do is
 to fill in the `subscription_ws_endpoint` parameter and everything will work out
 of the box with `aiohttp` WebSockets. You can see a full example
 [here](examples/aiohttp/dogs).
