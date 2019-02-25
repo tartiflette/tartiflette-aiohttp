@@ -22,6 +22,8 @@
     <script src="//cdn.jsdelivr.net/react/15.4.2/react.min.js"></script>
     <script src="//cdn.jsdelivr.net/react/15.4.2/react-dom.min.js"></script>
     <script src="//cdn.jsdelivr.net/npm/graphiql@0.12.0/graphiql.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/subscriptions-transport-ws@0.7.0/browser/client.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/graphiql-subscriptions-fetcher@0.0.2/browser/client.js"></script>
   </head>
   <body>
     <div id="graphiql">Loading...</div>
@@ -39,7 +41,7 @@
           }
         }
         return str.join("&");
-      }
+      };
 
       /**
        * This GraphiQL example illustrates how to use some of GraphiQL's props
@@ -143,13 +145,36 @@
           });
         }
       }
+
+      function buildSubscriptionURL(endpoint) {
+        var subscriptionURL = window.location.hostname;
+        if (window.location.port !== "") {
+          subscriptionURL += ":" + window.location.port;
+        }
+        return "ws://" + subscriptionURL + endpoint;
+      }
+
+      // Wrap GraphQLFetcher with subscription fetcher if needed.
+      var fetcher;
+      if (JSON.parse('${is_subscription_enabled}')) {
+        var subscriptionsClient = new window.SubscriptionsTransportWs.SubscriptionClient(
+          buildSubscriptionURL('${subscription_ws_endpoint}'),
+          {reconnect: true}
+        );
+        fetcher = window.GraphiQLSubscriptionsFetcher.graphQLFetcher(
+          subscriptionsClient, graphQLFetcher
+        );
+      } else {
+        fetcher = graphQLFetcher;
+      }
+
       // Render <GraphiQL /> into the body.
       // See the README in the top level of this module to learn more about
       // how you can customize GraphiQL by providing different values or
       // additional child elements.
       ReactDOM.render(
         React.createElement(GraphiQL, {
-          fetcher: graphQLFetcher,
+          fetcher: fetcher,
           query: parameters.query || (defaultQuery !== '' ? defaultQuery : undefined),
           variables: parameters.variables,
           operationName: parameters.operationName,

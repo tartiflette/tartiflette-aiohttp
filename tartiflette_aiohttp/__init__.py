@@ -6,6 +6,9 @@ from typing import List, Optional, Dict, Any
 from tartiflette import Engine
 from tartiflette_aiohttp._graphiql import graphiql_handler
 from tartiflette_aiohttp._handler import Handlers
+from tartiflette_aiohttp._subscription_ws_handler import (
+    AIOHTTPSubscriptionHandler,
+)
 
 
 def validate_and_compute_graphiql_option(
@@ -28,12 +31,30 @@ def validate_and_compute_graphiql_option(
         )
 
 
+def _set_subscription_ws_handler(
+    app: "Application",
+    subscription_ws_endpoint: Optional[str],
+    executor_http_methods: List[str],
+    engine: "Engine",
+) -> None:
+    if not subscription_ws_endpoint:
+        return
+
+    subscription_ws_handler = AIOHTTPSubscriptionHandler(engine)
+
+    for method in executor_http_methods:
+        app.router.add_route(
+            method, subscription_ws_endpoint, subscription_ws_handler
+        )
+
+
 def _set_graphiql_handler(
     app: "Application",
     graphiql_enabled: bool,
     graphiql_options: Optional[Dict[str, Any]],
     executor_http_endpoint: str,
     executor_http_methods: List[str],
+    subscription_ws_endpoint: Optional[str],
 ) -> None:
     if not graphiql_enabled:
         return
@@ -48,6 +69,10 @@ def _set_graphiql_handler(
             graphiql_handler,
             graphiql_options={
                 "endpoint": executor_http_endpoint,
+                "is_subscription_enabled": json.dumps(
+                    bool(subscription_ws_endpoint)
+                ),
+                "subscription_ws_endpoint": subscription_ws_endpoint,
                 "query": graphiql_options.get("default_query") or "",
                 "variables": validate_and_compute_graphiql_option(
                     graphiql_options.get("default_variables"),
@@ -76,6 +101,7 @@ def register_graphql_handlers(
     executor_http_endpoint: str = "/graphql",
     executor_http_methods: List[str] = None,
     engine: Engine = None,
+    subscription_ws_endpoint: Optional[str] = None,
     graphiql_enabled: bool = False,
     graphiql_options: Optional[Dict[str, Any]] = None,
 ) -> "Application":
@@ -91,6 +117,7 @@ def register_graphql_handlers(
         executor_http_endpoint {str} -- Path part of the URL the graphql endpoint will listen on (default: {"/graphql"})
         executor_http_methods {list[str]} -- List of HTTP methods allowed on the endpoint (only GET and POST are supported) (default: {None})
         engine {Engine} -- An already initialized Engine (default: {None})
+        subscription_ws_endpoint {Optional[str]} -- Path part of the URL the WebSocket GraphQL subscription endpoint will listen on (default: {None})
         graphiql_enabled {bool} -- Determines whether or not we should handle a GraphiQL endpoint (default: {False})
         graphiql_options {dict} -- Customization options for the GraphiQL instance (default: {None})
 
@@ -101,7 +128,7 @@ def register_graphql_handlers(
     Return:
         The app object.
     """
-    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments,too-many-locals
     if (not engine_sdl and not engine) or (engine and engine_sdl):
         raise Exception(
             "an engine OR an engine_sdl should be passed here, not both, not none"
@@ -133,12 +160,17 @@ def register_graphql_handlers(
         except AttributeError:
             raise Exception("Unsupported < %s > http method" % method)
 
+    _set_subscription_ws_handler(
+        app, subscription_ws_endpoint, executor_http_methods, engine
+    )
+
     _set_graphiql_handler(
         app,
         graphiql_enabled,
         graphiql_options,
         executor_http_endpoint,
         executor_http_methods,
+        subscription_ws_endpoint,
     )
 
     return app

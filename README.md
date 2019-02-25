@@ -10,6 +10,8 @@
 - [How to use](#how-to-use)
     - [Use with built-in Tartiflette Engine](#use-with-built-in-tartiflette-engine)
     - [Use with custom Tartiflette engine](#use-with-custom-tartiflette-engine)
+    - [Tartiflette with subscriptions](#tartiflette-with-subscriptions)
+    - [Enable GraphiQL handler](#enable-graphiql-handler)
 
 ## Usage
 
@@ -163,6 +165,13 @@ web.run_app(
   - **app**: Application object from aiohttp
 * **executor_http_endpoint**: Endpoint where the GraphQL Engine will be attached, by default on `/graphql`
 * **executor_http_methods**: HTTP Method where the GraphQL Engine will be attached, by default on **POST** and **GET**
+
+### Tartiflette with subscriptions
+
+Tartiflette embeds an easy way to deal with subscription. The only thing to do is
+to fill in the `subscription_ws_endpoint` parameter and everything will work out
+of the box with `aiohttp` WebSockets. You can see a full example
+[here](examples/aiohttp/dogs).
 
 ### Enable GraphiQL handler
 

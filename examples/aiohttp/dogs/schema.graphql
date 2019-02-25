@@ -1,0 +1,46 @@
+enum Status { SUCCESS }
+
+type Dog {
+  id: Int!
+  name: String!
+  nickname: String
+}
+
+input AddDogInput {
+  clientMutationId: String
+  name: String!
+  nickname: String
+}
+
+type AddDogPayload {
+  clientMutationId: String
+  status: Status
+  dog: Dog
+}
+
+input UpdateDogInput {
+  clientMutationId: String
+  id: Int!
+  name: String!
+  nickname: String
+}
+
+type UpdateDogPayload {
+  clientMutationId: String
+  status: Status
+  dog: Dog
+}
+
+type Query {
+  dog(id: Int!): Dog
+}
+
+type Mutation {
+  addDog(input: AddDogInput!): AddDogPayload
+  updateDog(input: UpdateDogInput!): UpdateDogPayload
+}
+
+type Subscription {
+  dogAdded: Dog
+  dogUpdated(id: Int!): Dog
+}

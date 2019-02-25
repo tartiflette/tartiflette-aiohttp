@@ -27,6 +27,8 @@ async def graphiql_handler(
 def _render_graphiql(graphiql_options: Dict[str, Any]) -> str:
     return Template(_GRAPHIQL_TEMPLATE).substitute(
         endpoint=graphiql_options["endpoint"],
+        is_subscription_enabled=graphiql_options["is_subscription_enabled"],
+        subscription_ws_endpoint=graphiql_options["subscription_ws_endpoint"],
         http_method=graphiql_options["http_method"],
         default_query=graphiql_options["query"],
         default_variables=graphiql_options["variables"],
