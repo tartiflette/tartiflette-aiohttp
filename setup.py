@@ -33,7 +33,7 @@ setup(
     ],
     keywords="api graphql protocol api rest relay tartiflette dailymotion",
     packages=_PACKAGES,
-    install_requires=["aiohttp~=3.4", "tartiflette<0.4.0,>=0.3.0"],
+    install_requires=["aiohttp~=3.4", "tartiflette<0.5.0,>=0.4.0"],
     tests_require=_TEST_REQUIRE,
     extras_require={"test": _TEST_REQUIRE},
     include_package_data=True,
