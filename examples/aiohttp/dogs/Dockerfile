@@ -1,6 +1,6 @@
 FROM python:3.7.1
 
-RUN apt-get update && apt-get install -y libmemcached-dev cmake bison flex
+RUN apt-get update && apt-get install -y cmake bison flex
 
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app

@@ -1,12 +1,9 @@
 import asyncio
 import json
-import logging
 
 import redis
 
 from tartiflette import Resolver, Subscription
-
-logger = logging.getLogger(__name__)
 
 
 # Faking storage
@@ -32,7 +29,6 @@ def get_dog_by_id(dog_id):
 
 @Resolver("Query.dog")
 async def query_dog_resolver(parent_result, args, ctx, info):
-    logger.error(">> query_dog_resolver")
     dog = get_dog_by_id(args["id"])
     if dog is None:
         raise Exception("Dog < %s > not found." % args["id"])
@@ -41,7 +37,6 @@ async def query_dog_resolver(parent_result, args, ctx, info):
 
 @Resolver("Mutation.addDog")
 async def mutation_add_dog_resolver(parent_result, args, ctx, info):
-    logger.error(">> mutation_add_dog_resolver")
     inputs = args["input"]
 
     dog_id = max(list(_DOGS.keys())) + 1
@@ -65,7 +60,6 @@ async def mutation_add_dog_resolver(parent_result, args, ctx, info):
 
 @Resolver("Mutation.updateDog")
 async def mutation_update_dog_resolver(parent_result, args, ctx, info):
-    logger.error(">> mutation_update_dog_resolver")
     inputs = args["input"]
 
     dog = get_dog_by_id(inputs["id"])
@@ -94,17 +88,12 @@ async def mutation_update_dog_resolver(parent_result, args, ctx, info):
 
 @Subscription("Subscription.dogAdded")
 async def subscription_dog_added_subscription(parent_result, args, ctx, info):
-    logger.error(">> subscription_dog_added_subscription")
     dog_added_pubsub = _REDIS.pubsub(ignore_subscribe_messages=True)
     dog_added_pubsub.subscribe(DOG_ADDED_TOPIC)
     while True:
         message = dog_added_pubsub.get_message()
         if message:
             payload = json.loads(message["data"])
-            logger.error(
-                ">> NEW_ADDED_MESSAGE - %s"
-                % {"raw": message, "payload": payload}
-            )
             yield payload
         await asyncio.sleep(0.001)
 
@@ -113,7 +102,6 @@ async def subscription_dog_added_subscription(parent_result, args, ctx, info):
 async def subscription_dog_updated_subscription(
     parent_result, args, ctx, info
 ):
-    logger.error(">> subscription_dog_updated_subscription")
     dog_updated_pubsub = _REDIS.pubsub(ignore_subscribe_messages=True)
     dog_updated_pubsub.subscribe(DOG_UPDATED_TOPIC)
     while True:
@@ -121,16 +109,6 @@ async def subscription_dog_updated_subscription(
         # Returns message only if its related to the wanted dog
         if message:
             payload = json.loads(message["data"])
-            logger.error(
-                ">> NEW_UPDATED_MESSAGE - %s"
-                % {
-                    "raw": message,
-                    "payload": payload,
-                    "arg[id]": args["id"],
-                    "payload[id]": payload["id"],
-                    "match": args["id"] == payload["id"],
-                }
-            )
             if payload["id"] == args["id"]:
                 yield payload
         await asyncio.sleep(0.001)
