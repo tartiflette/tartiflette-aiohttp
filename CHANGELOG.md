@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Release]
 
+### [0.3.0] - 2019-02-25
+
+- Add a built-in handler for WebSocket subscriptions.
+
 ### [0.2.1] - 2019-02-21
 
 - Add an optional GraphiQL view handler.
