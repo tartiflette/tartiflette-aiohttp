@@ -7,12 +7,12 @@ _TEST_REQUIRE = [
     "pytest-asyncio",
     "asynctest",
     "pytz",
-    "pylint==2.2.0",
+    "pylint==2.3.0",
     "xenon",
     "black==18.9b0",
 ]
 
-_VERSION = "0.3.0"
+_VERSION = "0.3.1"
 
 _PACKAGES = find_packages(exclude=["tests*"])
 

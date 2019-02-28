@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Release]
 
+### [0.3.1] - 2019-02-28
+
+#### Fix
+
+- Fix WebSockets handler to works even if `executor_http_methods` allows only `POST` method.
+
 ### [0.3.0] - 2019-02-25
 
 - Add a built-in handler for WebSocket subscriptions.
