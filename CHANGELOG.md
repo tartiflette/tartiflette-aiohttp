@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Release]
 
+### [0.3.2] - 2019-03-04
+
+#### Changed
+
+- Move Tartiflette deps to 0.5.x branch.
+
 ### [0.3.1] - 2019-02-28
 
 #### Fix
