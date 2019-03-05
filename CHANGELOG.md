@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Release]
 
-### [0.4.0] - 2019-03-04
+### [0.4.1] - 2019-03-05
+
+#### Fixed
+
+- [ISSUE-10](https://github.com/dailymotion/tartiflette-aiohttp/issues/10): Now handle errors in the subscription generator, send an error message to the client and finish the _on_start method.
+
+### [0.4.0] - 2019-03-04
 
 #### Changed
 
