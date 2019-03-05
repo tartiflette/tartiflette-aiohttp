@@ -158,12 +158,18 @@ class AIOHTTPSubscriptionHandler:
 
         connection_context.register_operation(operation_id, iterator)
 
-        async for result in iterator:
-            if not connection_context.has_operation(operation_id):
-                break
+        try:
+            async for result in iterator:
+                if not connection_context.has_operation(operation_id):
+                    break
+                await self._send_message(
+                    connection_context, operation_id, GQL_DATA, result
+                )
+        except Exception:  # pylint: disable=broad-except
             await self._send_message(
-                connection_context, operation_id, GQL_DATA, result
+                connection_context, operation_id, GQL_ERROR, "Internal Error"
             )
+
         await self._send_message(
             connection_context, operation_id, GQL_COMPLETE
         )
