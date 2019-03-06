@@ -166,8 +166,8 @@ class AIOHTTPSubscriptionHandler:
                     connection_context, operation_id, GQL_DATA, result
                 )
         except Exception:  # pylint: disable=broad-except
-            await self._send_message(
-                connection_context, operation_id, GQL_ERROR, "Internal Error"
+            await self._send_error(
+                connection_context, operation_id, Exception("Internal Error")
             )
 
         await self._send_message(
