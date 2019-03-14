@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Release]
 
+### [0.4.2] - 2019-03-06
+
+#### Changed
+
+- Improve subscription error handling by using `send_error` method instead of `send_message`.
+
 ### [0.4.1] - 2019-03-05
 
 #### Fixed
