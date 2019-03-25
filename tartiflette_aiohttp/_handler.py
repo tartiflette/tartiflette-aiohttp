@@ -1,3 +1,4 @@
+from copy import copy
 import json
 import logging
 
@@ -34,6 +35,7 @@ def prepare_response(data):
 
 
 async def _handle_query(req, query, query_vars, _query_name, context):
+    context = copy(context)
     try:
         return await req.app["ttftt_engine"].execute(
             query=query, variables=query_vars, context=context

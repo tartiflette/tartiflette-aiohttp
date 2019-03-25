@@ -1,17 +1,6 @@
 ![Tartiflette aiohttp](docs/github-landing.png)
 
-**tartiflette-aiohttp** is a wrapper of [aiohttp](https://github.com/aio-libs/aiohttp/) which includes the [Tartiflette GraphQL Engine](https://github.com/dailymotion/tartiflette), do not hesitate to take a look of the [Tartiflette project](https://github.com/dailymotion/tartiflette).
-
-**Summary**
-
-- [Usage](#usage)
-- [Installation](#installation)
-    - [Installation dependencies](#installation-dependencies)
-- [How to use](#how-to-use)
-    - [Use with built-in Tartiflette Engine](#use-with-built-in-tartiflette-engine)
-    - [Use with custom Tartiflette engine](#use-with-custom-tartiflette-engine)
-    - [Tartiflette with subscriptions](#tartiflette-with-subscriptions)
-    - [Enable GraphiQL handler](#enable-graphiql-handler)
+**tartiflette-aiohttp** is a wrapper of `aiohttp` which includes the Tartiflette GraphQL Engine. You can take a look at the [Tartiflette API documentation](https://tartiflette.io/docs/welcome/what-is-tartiflette).
 
 ## Usage
 
@@ -47,7 +36,9 @@ $ python main.py
 (Press CTRL+C to quit)
 ```
 
-Execute a request to your server
+> Note: The server will be listening on the `/graphql` path by default.
+
+Send a request to your server
 ```
 curl -v -d '{"query": "query { hello(name: "Chuck") }"}' -H "Content-Type: application/json" http://localhost:8080/graphql
 ```
@@ -56,29 +47,17 @@ curl -v -d '{"query": "query { hello(name: "Chuck") }"}' -H "Content-Type: appli
 
 `tartiflette-aiohttp` is available on [pypi.org](https://pypi.org/project/tartiflette-aiohttp/).
 
+**WARNING**: Do not forget to install the [tartiflette dependencies beforehand as explained in the tutorial](https://tartiflette.io/docs/tutorial/install-tartiflette/).
+
 ```bash
 pip install tartiflette-aiohttp
-```
-
-### Installation dependencies
-
-As [Tartiflette](https://github.com/dailymotion/tartiflette) based its Executor engine on *[libgraphqlparser](https://github.com/graphql/libgraphqlparser)*. You'll need these following commands on your environment to use the library. `cmake`, `bison` and `flex`.
-
-*MacOSX*
-```bash
-brew install cmake flex bison
-```
-
-*Ubuntu*
-```bash
-apt-get install cmake flex bison
 ```
 
 ## How to use
 
 ### Use with built-in Tartiflette Engine
 
-The basic and common way to use Tartiflette with aiohttp, is to create an aiohttp `web.Application` and use the `register_graphql_handlers` helper to bind Tartiflette and aiohttp together. `engine_*` parameters will be forwarded to the built-in [tartiflette](https://github.com/dailymotion/tartiflette) engine instance.
+The basic and common way to use Tartiflette with `aiohttp`, is to create an `aiohttp` `web.Application` and use the `register_graphql_handlers` helper to bind Tartiflette and `aiohttp` together. `engine_*` parameters will be forwarded to the built-in [tartiflette](https://github.com/dailymotion/tartiflette) engine instance.
 
 ```python
 from aiohttp import web
@@ -109,16 +88,16 @@ web.run_app(
 **Parameters**:
 
 * **engine_sdl**: Contains the [Schema Definition Language](https://graphql.org/learn/schema/)
-  - Could be a string which contains the SDL
-  - Could be an array of string, which contain the SDLs
-  - Could be a path of an SDL
-  - Could be an array of paths which contain the SDLs
-* **engine_schema_name**: Name of the schema used the built-in engine.
-* **executor_context**: Context which will be passed to each resolver. Be default, the context passed to each resolvers, will contain these properties.
-  - **req**: Request object from aiohttp
-  - **app**: Application object from aiohttp
+  - Can be a string which contains the SDL
+  - Can be an array of strings, which contain the SDLs
+  - Can be a path to an SDL
+  - Can be an array of paths which contain the SDLs
+* **engine_schema_name**: Name of the schema used by the built-in engine. Useful for advanced use-cases, see [Schema Registry API](https://tartiflette.io/docs/api/schema-registry).
+* **executor_context**: Context which will be passed to each resolver (as a dict). Very useful for passing handlers to services, functions or data that you want to use in your resolvers. The context reference is **unique** per request, a shallow copy is created based on the context passed. 
+  - **req**: Request object from `aiohttp`
+  - **app**: Application object from `aiohttp`
 * **executor_http_endpoint**: Endpoint where the GraphQL Engine will be attached, by default on `/graphql`
-* **executor_http_methods**: HTTP Method where the GraphQL Engine will be attached, by default on **POST** and **GET**.
+* **executor_http_methods**: HTTP Methods where the GraphQL Engine will be attached, by default on **POST** and **GET**.
 
 ### Use with custom Tartiflette engine
 
@@ -159,16 +138,16 @@ web.run_app(
 
 **Parameters**:
 
-* **engine**: Tartiflette Engine instance
-* **executor_context**: Context which will be passed to each resolver. Be default, the context passed to each resolvers, will contain these properties
-  - **req**: Request object from aiohttp
-  - **app**: Application object from aiohttp
+* **engine**: an instance of the Tartiflette Engine
+* **executor_context**: Context which will be passed to each resolver (as a dict). Very useful for passing handlers to services, functions or data that you want to use in your resolvers.
+  - **req**: Request object from `aiohttp`
+  - **app**: Application object from `aiohttp`
 * **executor_http_endpoint**: Endpoint where the GraphQL Engine will be attached, by default on `/graphql`
-* **executor_http_methods**: HTTP Method where the GraphQL Engine will be attached, by default on **POST** and **GET**
+* **executor_http_methods**: HTTP Methods where the GraphQL Engine will be attached, by default on **POST** and **GET**
 
 ### Tartiflette with subscriptions
 
-Tartiflette embeds an easy way to deal with subscription. The only thing to do is
+Tartiflette embeds an easy way to deal with subscriptions. The only thing to do is
 to fill in the `subscription_ws_endpoint` parameter and everything will work out
 of the box with `aiohttp` WebSockets. You can see a full example
 [here](examples/aiohttp/dogs).
@@ -218,13 +197,13 @@ web.run_app(
 **Parameters**:
 
 * **engine_sdl**: Contains the [Schema Definition Language](https://graphql.org/learn/schema/)
-  - Could be a string which contains the SDL
-  - Could be an array of string, which contain the SDLs
-  - Could be a path of an SDL
-  - Could be an array of paths which contain the SDLs
-* **graphiql_enabled** *(Optional[bool] = False)*: Determines whether or not we should handle a GraphiQL endpoint
+  - Can be a string which contains the SDL
+  - Can be an array of strings, which contain the SDLs
+  - Can be a path to an SDL
+  - Can be an array of paths which contain the SDLs
+* **graphiql_enabled** *(Optional[bool] = False)*: Determines whether or not we should include a GraphiQL interface
 * **graphiql_options** *(Optional[dict] = None)*: Customization options for the GraphiQL instance:
-  - **endpoint** *(Optional[str] = "/graphiql")*: allows to customize the GraphiQL endpoint
+  - **endpoint** *(Optional[str] = "/graphiql")*: allows to customize the GraphiQL interface endpoint path
   - **default_query** *(Optional[str] = None)*: allows you to pre-fill the GraphiQL interface with a default query
   - **default_variables** *(Optional[dict] = None)*: allows you to pre-fill the GraphiQL interface with default variables
   - **default_headers** *(Optional[dict] = None)*: allows you to add default headers to each request sent through the GraphiQL instance
