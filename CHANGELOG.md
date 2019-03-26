@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Release]
 
+### [0.5.0] - 2019-03-25
+
+#### Changed
+
+- An unique reference of the `executor_context` is passed for each request. Thanks to a shallow copy.
+
 ### [0.4.2] - 2019-03-06
 
 #### Changed
