@@ -21,7 +21,7 @@ complexity:
 
 .PHONY: test-integration
 test-integration: clean
-	true
+	py.test -s tests/integration --junitxml=reports/report_integ_tests.xml --cov . --cov-config .coveragerc --cov-report term-missing --cov-report xml:reports/coverage_integ.xml
 
 .PHONY: test-unit
 test-unit: clean

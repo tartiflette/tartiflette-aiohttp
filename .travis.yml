@@ -20,6 +20,7 @@ python:
 # make style | test-unit | test-functional | init
 script:
   - make test-unit
+  - make test-integration
   - make test-functional
   - make style
   - make complexity
