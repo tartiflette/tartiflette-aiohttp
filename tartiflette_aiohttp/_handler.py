@@ -34,11 +34,17 @@ def prepare_response(data):
     return web.json_response(data, headers=headers, dumps=json.dumps)
 
 
-async def _handle_query(req, query, query_vars, _query_name, context):
+async def _handle_query(req, query, query_vars, operation_name, context):
     context = copy(context)
     try:
+        if not operation_name:
+            operation_name = None
+
         return await req.app["ttftt_engine"].execute(
-            query=query, variables=query_vars, context=context
+            query=query,
+            variables=query_vars,
+            context=context,
+            operation_name=operation_name,
         )
     except Exception as e:  # pylint: disable=broad-except
         logger.exception(e)
@@ -92,9 +98,9 @@ class Handlers:
         user_c["req"] = req
 
         try:
-            qry, qry_vars, qry_name = await param_func(req)
+            qry, qry_vars, oprn_name = await param_func(req)
             return prepare_response(
-                await _handle_query(req, qry, qry_vars, qry_name, user_c)
+                await _handle_query(req, qry, qry_vars, oprn_name, user_c)
             )
         except BadRequestError as e:
             return prepare_response(

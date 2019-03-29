@@ -41,6 +41,7 @@ async def test_handler__handle_query():
                 "query": "query a {}",
                 "variables": {"B": "C"},
                 "context": {"D": "E"},
+                "operation_name": "a",
             },
         )
     ]
@@ -230,44 +231,3 @@ async def test_handler__handle_post():
     assert Handlers._handle.call_args_list == [
         ((_post_params, {"a": "n"}, a_req),)
     ]
-
-
-@pytest.mark.asyncio
-async def test_handler__handle_query__context_unicity():
-    from tartiflette_aiohttp._handler import _handle_query
-    from tartiflette import Engine, Resolver
-
-    @Resolver("Query.hello")
-    async def resolver_hello(parent, args, ctx, info):
-        try:
-            ctx["counter"] += 1
-        except:
-            ctx["counter"] = 1
-        finally:
-            print("counter", ctx["counter"])
-        return "hello " + str(ctx["counter"])
-    
-    tftt_engine = Engine("""
-    type Query {
-        hello(name: String): String
-    }
-    """)
-
-    a_req = Mock()
-    a_req.app = {"ttftt_engine": tftt_engine}
-
-    ctx = {}
-
-    await _handle_query(
-        a_req, 'query { hello(name: "Chuck") }', None, None, ctx
-    )
-
-    await _handle_query(
-        a_req, 'query { hello(name: "Chuck") }', None, None, ctx
-    )
-
-    b_response = await _handle_query(
-        a_req, 'query { hello(name: "Chuck") }', None, None, ctx
-    )
-
-    assert b_response == {'data': {'hello': 'hello 1'}}

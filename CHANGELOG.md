@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Release]
 
+### [0.5.1] - 2019-03-29
+
+#### Fixed
+
+- Pass the "operation name" to the execution _(engine)_.
+
 ### [0.5.0] - 2019-03-25
 
 #### Changed
