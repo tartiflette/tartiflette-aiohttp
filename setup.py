@@ -12,7 +12,7 @@ _TEST_REQUIRE = [
     "black==19.3b0",
 ]
 
-_VERSION = "0.5.1"
+_VERSION = "0.6.0"
 
 _PACKAGES = find_packages(exclude=["tests*"])
 
@@ -33,7 +33,7 @@ setup(
     ],
     keywords="api graphql protocol api rest relay tartiflette dailymotion",
     packages=_PACKAGES,
-    install_requires=["aiohttp~=3.4", "tartiflette<0.7.0,>=0.6.5"],
+    install_requires=["aiohttp~=3.4", "tartiflette<0.8.0,>=0.6.5"],
     tests_require=_TEST_REQUIRE,
     extras_require={"test": _TEST_REQUIRE},
     include_package_data=True,
