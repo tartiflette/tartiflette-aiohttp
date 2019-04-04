@@ -1,4 +1,4 @@
-![Tartiflette aiohttp](docs/github-landing.png)
+![Tartiflette aiohttp](github-landing.png)
 
 **tartiflette-aiohttp** is a wrapper of `aiohttp` which includes the Tartiflette GraphQL Engine. You can take a look at the [Tartiflette API documentation](https://tartiflette.io/docs/welcome/what-is-tartiflette).
 

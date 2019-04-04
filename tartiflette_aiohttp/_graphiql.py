@@ -1,7 +1,7 @@
 import os
 
 from string import Template
-from typing import Dict, Any
+from typing import Any, Dict
 
 from aiohttp import web
 

@@ -1,21 +1,21 @@
 import json
 
-from asyncio import wait, ensure_future, shield
-from typing import Dict, Any, AsyncIterator, Optional, Set
+from asyncio import ensure_future, shield, wait
+from typing import Any, AsyncIterator, Dict, Optional, Set
 
-from aiohttp import web, WSMsgType
+from aiohttp import WSMsgType, web
 
 from tartiflette_aiohttp._constants import (
-    WS_PROTOCOL,
-    GQL_CONNECTION_INIT,
+    GQL_COMPLETE,
     GQL_CONNECTION_ACK,
     GQL_CONNECTION_ERROR,
+    GQL_CONNECTION_INIT,
     GQL_CONNECTION_TERMINATE,
-    GQL_START,
     GQL_DATA,
     GQL_ERROR,
-    GQL_COMPLETE,
+    GQL_START,
     GQL_STOP,
+    WS_PROTOCOL,
 )
 
 _ALLOWED_ERROR_TYPES = [GQL_CONNECTION_ERROR, GQL_ERROR]
