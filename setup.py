@@ -12,7 +12,7 @@ _TEST_REQUIRE = [
     "black==19.3b0",
 ]
 
-_VERSION = "0.6.2"
+_VERSION = "0.6.3"
 
 _PACKAGES = find_packages(exclude=["tests*"])
 
@@ -35,7 +35,7 @@ setup(
     packages=_PACKAGES,
     install_requires=[
         "aiohttp~=3.4",
-        "tartiflette<0.9.0,>=0.6.5,!=0.7.0,!=0.7.1,!=0.7.2",
+        "tartiflette<0.10.0,>=0.6.5,!=0.7.0,!=0.7.1,!=0.7.2",
     ],
     tests_require=_TEST_REQUIRE,
     extras_require={"test": _TEST_REQUIRE},
