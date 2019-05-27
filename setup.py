@@ -1,15 +1,15 @@
 from setuptools import find_packages, setup
 
-
 _TEST_REQUIRE = [
-    "pytest",
-    "pytest-cov",
-    "pytest-asyncio",
-    "asynctest",
+    "pytest==4.4.0",
+    "pytest-cov==2.6.1",
+    "pytest-asyncio==0.10.0",
+    "asynctest==0.13.0",
     "pytz",
-    "pylint==2.3.1",
-    "xenon",
-    "black==19.3b0",
+    "pylint==2.3.0",
+    "xenon==0.5.5",
+    "black==18.9b0",
+    "isort==4.3.4",
 ]
 
 _VERSION = "0.6.3"
@@ -21,6 +21,7 @@ setup(
     version=_VERSION,
     description="Runs a Tartiflette GraphQL Engine through aiohttp",
     long_description=open("README.md").read(),
+    long_description_content_type="text/markdown",
     url="https://github.com/dailymotion/tartiflette-aiohttp",
     author="Dailymotion Core API Team",
     author_email="team@tartiflette.io",

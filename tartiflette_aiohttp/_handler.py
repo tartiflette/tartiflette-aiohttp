@@ -1,9 +1,9 @@
-from copy import copy
 import json
 import logging
 
-from aiohttp import web
+from copy import copy
 
+from aiohttp import web
 
 logger = logging.getLogger(__name__)
 

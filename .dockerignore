@@ -1,0 +1,9 @@
+reports/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest*/
+build/
+libgraphqlparser/
+dist/
+github-landing.png
