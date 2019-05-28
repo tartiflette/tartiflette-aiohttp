@@ -89,6 +89,10 @@ def _set_graphiql_handler(
     )
 
 
+async def _on_startup(sdl, schema_name, app):
+    await app["ttftt_engine"].cook(sdl=sdl, schema_name=schema_name)
+
+
 def register_graphql_handlers(
     app: "Application",
     engine_sdl: str = None,
@@ -116,6 +120,7 @@ def register_graphql_handlers(
         subscription_ws_endpoint {Optional[str]} -- Path part of the URL the WebSocket GraphQL subscription endpoint will listen on (default: {None})
         graphiql_enabled {bool} -- Determines whether or not we should handle a GraphiQL endpoint (default: {False})
         graphiql_options {dict} -- Customization options for the GraphiQL instance (default: {None})
+        engine_modules: {Optional[List[Union[str, Dict[str, Union[str, Dict[str, str]]]]]]} -- Module to import (default:{None})
 
     Raises:
         Exception -- On bad sdl/engine parameter combinaison.
@@ -139,7 +144,10 @@ def register_graphql_handlers(
         executor_http_methods = ["GET", "POST"]
 
     if not engine:
-        engine = Engine(engine_sdl, engine_schema_name)
+        engine = Engine()
+        app.on_startup.append(
+            partial(_on_startup, engine_sdl, engine_schema_name, engine_modules)
+        )
 
     app["ttftt_engine"] = engine
 
