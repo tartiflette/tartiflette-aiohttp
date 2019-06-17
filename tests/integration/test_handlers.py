@@ -6,7 +6,7 @@ import pytest
 @pytest.mark.asyncio
 async def test_handler__handle_query__context_unicity():
     from tartiflette_aiohttp._handler import _handle_query
-    from tartiflette import Engine, Resolver
+    from tartiflette import Resolver, create_engine
 
     @Resolver("Query.hello", schema_name="test_handler__handle_query__context_unicity")
     async def resolver_hello(parent, args, ctx, info):
@@ -15,8 +15,8 @@ async def test_handler__handle_query__context_unicity():
         except:
             ctx["counter"] = 1
         return "hello " + str(ctx["counter"])
-    
-    tftt_engine = Engine(
+
+    tftt_engine = await create_engine(
         """
         type Query {
             hello(name: String): String
@@ -48,13 +48,13 @@ async def test_handler__handle_query__context_unicity():
 @pytest.mark.asyncio
 async def test_handler__handle_query__operation_name():
     from tartiflette_aiohttp._handler import _handle_query
-    from tartiflette import Engine, Resolver
+    from tartiflette import Resolver, create_engine
 
     @Resolver("Query.hello", schema_name="test_handler__handle_query__operation_name")
     async def resolver_hello(parent, args, ctx, info):
         return "hello " + args["name"]
-    
-    tftt_engine = Engine(
+
+    tftt_engine = await create_engine(
         """
         type Query {
             hello(name: String): String
