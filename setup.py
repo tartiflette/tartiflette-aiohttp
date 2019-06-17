@@ -4,6 +4,7 @@ _TEST_REQUIRE = [
     "pytest==4.4.0",
     "pytest-cov==2.6.1",
     "pytest-asyncio==0.10.0",
+    "pytest-aiohttp==0.3.0",
     "asynctest==0.13.0",
     "pytz",
     "pylint==2.3.0",

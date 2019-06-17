@@ -8,7 +8,10 @@ async def test_handler__handle_query__context_unicity():
     from tartiflette_aiohttp._handler import _handle_query
     from tartiflette import Resolver, create_engine
 
-    @Resolver("Query.hello", schema_name="test_handler__handle_query__context_unicity")
+    @Resolver(
+        "Query.hello",
+        schema_name="test_handler__handle_query__context_unicity",
+    )
     async def resolver_hello(parent, args, ctx, info):
         try:
             ctx["counter"] += 1
@@ -22,7 +25,7 @@ async def test_handler__handle_query__context_unicity():
             hello(name: String): String
         }
         """,
-        schema_name="test_handler__handle_query__context_unicity"
+        schema_name="test_handler__handle_query__context_unicity",
     )
 
     a_req = Mock()
@@ -42,7 +45,7 @@ async def test_handler__handle_query__context_unicity():
         a_req, 'query { hello(name: "Chuck") }', None, None, ctx
     )
 
-    assert b_response == {'data': {'hello': 'hello 1'}}
+    assert b_response == {"data": {"hello": "hello 1"}}
 
 
 @pytest.mark.asyncio
@@ -50,7 +53,9 @@ async def test_handler__handle_query__operation_name():
     from tartiflette_aiohttp._handler import _handle_query
     from tartiflette import Resolver, create_engine
 
-    @Resolver("Query.hello", schema_name="test_handler__handle_query__operation_name")
+    @Resolver(
+        "Query.hello", schema_name="test_handler__handle_query__operation_name"
+    )
     async def resolver_hello(parent, args, ctx, info):
         return "hello " + args["name"]
 
@@ -60,7 +65,7 @@ async def test_handler__handle_query__operation_name():
             hello(name: String): String
         }
         """,
-        schema_name="test_handler__handle_query__operation_name"
+        schema_name="test_handler__handle_query__operation_name",
     )
 
     a_req = Mock()
@@ -77,7 +82,7 @@ async def test_handler__handle_query__operation_name():
         """,
         None,
         "B",
-        ctx
+        ctx,
     )
 
-    assert result == {'data': {'hello': 'hello Bar'}}
+    assert result == {"data": {"hello": "hello Bar"}}

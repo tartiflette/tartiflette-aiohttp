@@ -1,7 +1,8 @@
 import json
 
 from functools import partial
-from typing import List, Optional, Dict, Any
+from inspect import iscoroutine
+from typing import List, Optional, Dict, Any, Union
 
 from tartiflette import Engine
 from tartiflette_aiohttp._graphiql import graphiql_handler
@@ -89,8 +90,12 @@ def _set_graphiql_handler(
     )
 
 
-async def _on_startup(sdl, schema_name, app):
+async def _cook_on_startup(sdl, schema_name, app):
     await app["ttftt_engine"].cook(sdl=sdl, schema_name=schema_name)
+
+
+async def _await_on_startup(app):
+    app["ttftt_engine"] = await app["ttftt_engine"]
 
 
 def register_graphql_handlers(
@@ -104,6 +109,9 @@ def register_graphql_handlers(
     subscription_ws_endpoint: Optional[str] = None,
     graphiql_enabled: bool = False,
     graphiql_options: Optional[Dict[str, Any]] = None,
+    engine_modules: Optional[
+        List[Union[str, Dict[str, Union[str, Dict[str, str]]]]]
+    ] = None,
 ) -> "Application":
     """Register a Tartiflette Engine to an app
 
@@ -145,9 +153,16 @@ def register_graphql_handlers(
 
     if not engine:
         engine = Engine()
+
+    if iscoroutine(engine):
+        app.on_startup.append(_await_on_startup)
+    else:
         app.on_startup.append(
             partial(
-                _on_startup, engine_sdl, engine_schema_name, engine_modules
+                _cook_on_startup,
+                engine_sdl,
+                engine_schema_name,
+                engine_modules,
             )
         )
 
