@@ -146,7 +146,9 @@ def register_graphql_handlers(
     if not engine:
         engine = Engine()
         app.on_startup.append(
-            partial(_on_startup, engine_sdl, engine_schema_name, engine_modules)
+            partial(
+                _on_startup, engine_sdl, engine_schema_name, engine_modules
+            )
         )
 
     app["ttftt_engine"] = engine
