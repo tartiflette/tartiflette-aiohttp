@@ -90,8 +90,10 @@ def _set_graphiql_handler(
     )
 
 
-async def _cook_on_startup(sdl, schema_name, app):
-    await app["ttftt_engine"].cook(sdl=sdl, schema_name=schema_name)
+async def _cook_on_startup(sdl, schema_name, modules, app):
+    await app["ttftt_engine"].cook(
+        sdl=sdl, schema_name=schema_name, modules=modules
+    )
 
 
 async def _await_on_startup(app):
@@ -124,7 +126,7 @@ def register_graphql_handlers(
         executor_context {dict} -- Context dict that will be passed to the resolvers (default: {None})
         executor_http_endpoint {str} -- Path part of the URL the graphql endpoint will listen on (default: {"/graphql"})
         executor_http_methods {list[str]} -- List of HTTP methods allowed on the endpoint (only GET and POST are supported) (default: {None})
-        engine {Engine} -- An already initialized Engine (default: {None})
+        engine {Engine} -- An uncooked engine, or a create_engine coroutines (default: {None})
         subscription_ws_endpoint {Optional[str]} -- Path part of the URL the WebSocket GraphQL subscription endpoint will listen on (default: {None})
         graphiql_enabled {bool} -- Determines whether or not we should handle a GraphiQL endpoint (default: {False})
         graphiql_options {dict} -- Customization options for the GraphiQL instance (default: {None})
@@ -138,11 +140,6 @@ def register_graphql_handlers(
         The app object.
     """
     # pylint: disable=too-many-arguments,too-many-locals
-    if (not engine_sdl and not engine) or (engine and engine_sdl):
-        raise Exception(
-            "an engine OR an engine_sdl should be passed here, not both, not none"
-        )
-
     if not executor_context:
         executor_context = {}
 
