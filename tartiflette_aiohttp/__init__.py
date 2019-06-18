@@ -1,7 +1,8 @@
 import json
 
 from functools import partial
-from typing import List, Optional, Dict, Any
+from inspect import iscoroutine
+from typing import List, Optional, Dict, Any, Union
 
 from tartiflette import Engine
 from tartiflette_aiohttp._graphiql import graphiql_handler
@@ -89,6 +90,16 @@ def _set_graphiql_handler(
     )
 
 
+async def _cook_on_startup(sdl, schema_name, modules, app):
+    await app["ttftt_engine"].cook(
+        sdl=sdl, schema_name=schema_name, modules=modules
+    )
+
+
+async def _await_on_startup(app):
+    app["ttftt_engine"] = await app["ttftt_engine"]
+
+
 def register_graphql_handlers(
     app: "Application",
     engine_sdl: str = None,
@@ -100,6 +111,9 @@ def register_graphql_handlers(
     subscription_ws_endpoint: Optional[str] = None,
     graphiql_enabled: bool = False,
     graphiql_options: Optional[Dict[str, Any]] = None,
+    engine_modules: Optional[
+        List[Union[str, Dict[str, Union[str, Dict[str, str]]]]]
+    ] = None,
 ) -> "Application":
     """Register a Tartiflette Engine to an app
 
@@ -112,10 +126,11 @@ def register_graphql_handlers(
         executor_context {dict} -- Context dict that will be passed to the resolvers (default: {None})
         executor_http_endpoint {str} -- Path part of the URL the graphql endpoint will listen on (default: {"/graphql"})
         executor_http_methods {list[str]} -- List of HTTP methods allowed on the endpoint (only GET and POST are supported) (default: {None})
-        engine {Engine} -- An already initialized Engine (default: {None})
+        engine {Engine} -- An uncooked engine, or a create_engine coroutines (default: {None})
         subscription_ws_endpoint {Optional[str]} -- Path part of the URL the WebSocket GraphQL subscription endpoint will listen on (default: {None})
         graphiql_enabled {bool} -- Determines whether or not we should handle a GraphiQL endpoint (default: {False})
         graphiql_options {dict} -- Customization options for the GraphiQL instance (default: {None})
+        engine_modules: {Optional[List[Union[str, Dict[str, Union[str, Dict[str, str]]]]]]} -- Module to import (default:{None})
 
     Raises:
         Exception -- On bad sdl/engine parameter combinaison.
@@ -125,11 +140,6 @@ def register_graphql_handlers(
         The app object.
     """
     # pylint: disable=too-many-arguments,too-many-locals
-    if (not engine_sdl and not engine) or (engine and engine_sdl):
-        raise Exception(
-            "an engine OR an engine_sdl should be passed here, not both, not none"
-        )
-
     if not executor_context:
         executor_context = {}
 
@@ -139,7 +149,19 @@ def register_graphql_handlers(
         executor_http_methods = ["GET", "POST"]
 
     if not engine:
-        engine = Engine(engine_sdl, engine_schema_name)
+        engine = Engine()
+
+    if iscoroutine(engine):
+        app.on_startup.append(_await_on_startup)
+    else:
+        app.on_startup.append(
+            partial(
+                _cook_on_startup,
+                engine_sdl,
+                engine_schema_name,
+                engine_modules,
+            )
+        )
 
     app["ttftt_engine"] = engine
 
