@@ -77,8 +77,8 @@ class AIOHTTPConnectionContext:
 
 
 class AIOHTTPSubscriptionHandler:
-    def __init__(self, engine: "Engine") -> None:
-        self._engine: "Engine" = engine
+    def __init__(self, app: "Application") -> None:
+        self._app: "Application" = app
 
     async def _send_message(
         self,
@@ -154,7 +154,7 @@ class AIOHTTPSubscriptionHandler:
         if connection_context.has_operation(operation_id):
             await self._unsubscribe(connection_context, operation_id)
 
-        iterator = self._engine.subscribe(**params)
+        iterator = self._app["ttftt_engine"].subscribe(**params)
 
         connection_context.register_operation(operation_id, iterator)
 
