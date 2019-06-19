@@ -33,15 +33,13 @@ def validate_and_compute_graphiql_option(
 
 
 def _set_subscription_ws_handler(
-    app: "Application",
-    subscription_ws_endpoint: Optional[str],
-    engine: "Engine",
+    app: "Application", subscription_ws_endpoint: Optional[str]
 ) -> None:
     if not subscription_ws_endpoint:
         return
 
     app.router.add_route(
-        "GET", subscription_ws_endpoint, AIOHTTPSubscriptionHandler(engine)
+        "GET", subscription_ws_endpoint, AIOHTTPSubscriptionHandler(app)
     )
 
 
@@ -178,7 +176,7 @@ def register_graphql_handlers(
         except AttributeError:
             raise Exception("Unsupported < %s > http method" % method)
 
-    _set_subscription_ws_handler(app, subscription_ws_endpoint, engine)
+    _set_subscription_ws_handler(app, subscription_ws_endpoint)
 
     _set_graphiql_handler(
         app,
