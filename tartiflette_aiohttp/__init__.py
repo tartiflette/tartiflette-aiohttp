@@ -2,7 +2,7 @@ import json
 
 from functools import partial
 from inspect import iscoroutine
-from typing import List, Optional, Dict, Any, Union
+from typing import Any, Dict, List, Optional, Union
 
 from tartiflette import Engine
 from tartiflette_aiohttp._graphiql import graphiql_handler
