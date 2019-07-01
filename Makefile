@@ -18,7 +18,7 @@ format-import:
 
 .PHONY: format
 format: format-import
-	black -l 79 --py36 tartiflette_aiohttp setup.py tests
+	black -l 79 --target-version py36 tartiflette_aiohttp setup.py tests
 
 .PHONY: check-import
 check-import:
@@ -26,7 +26,7 @@ check-import:
 
 .PHONY: check-format
 check-format:
-	black -l 79 --py36 --check tartiflette_aiohttp setup.py tests
+	black -l 79 --target-version py36 --check tartiflette_aiohttp setup.py tests
 
 .PHONY: style
 style: check-format check-import
