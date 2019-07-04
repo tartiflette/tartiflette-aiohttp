@@ -1,5 +1,5 @@
 import asyncio
-from tartiflette.resolver import Resolver
+from tartiflette import Resolver
 
 _LUKE = {
     "type": "Human",
