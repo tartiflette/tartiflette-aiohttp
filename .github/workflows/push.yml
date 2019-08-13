@@ -1,8 +1,7 @@
 on: [push, pull_request]
 name: build and release
 jobs:
-  build_and_publish:
-    name: build docker image
+  build_publish_and_release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
@@ -31,25 +30,20 @@ jobs:
         with:
           args: run -i tartiflette-aiohttp make test-unit
       - name: build and publish to pypi
-        uses: ./github-actions/pypi/
+        uses: ./.github/actions/pypi/
         env:
           TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
           TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
-  release:
-    name: Publish a release on Github
-    runs-on: ubuntu-latest
-    needs: build_and_publish
-    steps:
       - name: set version and changelog
-        uses: ./github-actions/shell/
+        uses: ./.github/actions/shell/
         if: github.ref == 'refs/heads/master'
         with:
           entrypoint: make
           args: github-action-version-and-changelog
       - name: release
-        uses: ./github-actions/release/
+        uses: ./.github/actions/release/
         if: github.ref == 'refs/heads/master'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPOSITORY: tartiflette-aiohttp
-          USERNAME: tartiflette
+          USERNAME: tartiflettegit 
