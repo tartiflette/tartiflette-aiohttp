@@ -21,12 +21,14 @@ from tartiflette_aiohttp._constants import (
 _ALLOWED_ERROR_TYPES = [GQL_CONNECTION_ERROR, GQL_ERROR]
 
 
-def _get_graphql_params(payload: Dict[str, Any]) -> Dict[str, Any]:
+def _get_graphql_params(
+    payload: Dict[str, Any], context: Dict[str, Any]
+) -> Dict[str, Any]:
     return {
         "query": payload.get("query"),
         "variables": payload.get("variables"),
         "operation_name": payload.get("operationName"),
-        "context": payload.get("context"),
+        "context": context,
     }
 
 
@@ -77,8 +79,9 @@ class AIOHTTPConnectionContext:
 
 
 class AIOHTTPSubscriptionHandler:
-    def __init__(self, app: "Application") -> None:
+    def __init__(self, app: "Application", context: Dict[str, Any]) -> None:
         self._app: "Application" = app
+        self._context = context
 
     async def _send_message(
         self,
@@ -143,7 +146,7 @@ class AIOHTTPSubscriptionHandler:
         operation_id: str,
         payload: Dict[str, Any],
     ) -> None:
-        params = _get_graphql_params(payload)
+        params = _get_graphql_params(payload, self._context)
         if not isinstance(params, dict):
             return await self._send_error(
                 connection_context,
