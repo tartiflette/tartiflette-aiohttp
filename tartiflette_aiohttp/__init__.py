@@ -33,13 +33,17 @@ def validate_and_compute_graphiql_option(
 
 
 def _set_subscription_ws_handler(
-    app: "Application", subscription_ws_endpoint: Optional[str]
+    app: "Application",
+    subscription_ws_endpoint: Optional[str],
+    context: Dict[str, Any],
 ) -> None:
     if not subscription_ws_endpoint:
         return
 
     app.router.add_route(
-        "GET", subscription_ws_endpoint, AIOHTTPSubscriptionHandler(app)
+        "GET",
+        subscription_ws_endpoint,
+        AIOHTTPSubscriptionHandler(app, context),
     )
 
 
@@ -102,7 +106,7 @@ def register_graphql_handlers(
     app: "Application",
     engine_sdl: str = None,
     engine_schema_name: str = "default",
-    executor_context: dict = None,
+    executor_context: Optional[Dict[str, Any]] = None,
     executor_http_endpoint: str = "/graphql",
     executor_http_methods: List[str] = None,
     engine: Engine = None,
@@ -121,7 +125,7 @@ def register_graphql_handlers(
         app {aiohttp.web.Application} -- The application to register to.
         engine_sdl {str} -- The SDL defining your API (default: {None})
         engine_schema_name {str} -- The name of your sdl (default: {"default"})
-        executor_context {dict} -- Context dict that will be passed to the resolvers (default: {None})
+        executor_context {Optional[Dict[str, Any]]} -- Context dict that will be passed to the resolvers (default: {None})
         executor_http_endpoint {str} -- Path part of the URL the graphql endpoint will listen on (default: {"/graphql"})
         executor_http_methods {list[str]} -- List of HTTP methods allowed on the endpoint (only GET and POST are supported) (default: {None})
         engine {Engine} -- An uncooked engine, or a create_engine coroutines (default: {None})
@@ -176,7 +180,9 @@ def register_graphql_handlers(
         except AttributeError:
             raise Exception("Unsupported < %s > http method" % method)
 
-    _set_subscription_ws_handler(app, subscription_ws_endpoint)
+    _set_subscription_ws_handler(
+        app, subscription_ws_endpoint, executor_context
+    )
 
     _set_graphiql_handler(
         app,
