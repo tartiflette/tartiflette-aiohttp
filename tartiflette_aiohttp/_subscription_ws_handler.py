@@ -58,10 +58,10 @@ class AIOHTTPConnectionContext:
         self._operations[operation_id] = async_iterator
 
     def get_operation(self, operation_id: str) -> AsyncIterator:
-        return self._operations[operation_id]
+        return self._operations.get(operation_id)
 
     def remove_operation(self, operation_id: str) -> None:
-        del self._operations[operation_id]
+        self._operations.pop(operation_id, None)
 
     async def receive(self) -> str:
         msg = await self._socket.receive()
@@ -134,11 +134,10 @@ class AIOHTTPSubscriptionHandler:
     async def _unsubscribe(
         self, connection_context: "AIOHTTPConnectionContext", operation_id: str
     ) -> None:
-        try:
-            await connection_context.get_operation(operation_id).aclose()
+        operation = connection_context.get_operation(operation_id)
+        if operation is not None:
+            await operation.aclose()
             connection_context.remove_operation(operation_id)
-        except KeyError:
-            pass
 
     async def _on_start(
         self,
@@ -228,7 +227,7 @@ class AIOHTTPSubscriptionHandler:
         connection_context: "AIOHTTPConnectionContext",
         tasks: Set["Task"],
     ) -> None:
-        for operation_id in connection_context.operations:
+        for operation_id in list(connection_context.operations):
             await self._unsubscribe(connection_context, operation_id)
 
         for task in tasks:
