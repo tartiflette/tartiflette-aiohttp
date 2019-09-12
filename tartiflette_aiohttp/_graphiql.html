@@ -151,7 +151,8 @@
         if (window.location.port !== "") {
           subscriptionURL += ":" + window.location.port;
         }
-        return "ws://" + subscriptionURL + endpoint;
+        var protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+        return protocol + "//" + subscriptionURL + endpoint;
       }
 
       // Wrap GraphQLFetcher with subscription fetcher if needed.
