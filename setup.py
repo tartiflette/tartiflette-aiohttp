@@ -1,7 +1,7 @@
 from setuptools import find_packages, setup
 
 _TEST_REQUIRE = [
-    "pytest==5.1.1",
+    "pytest==5.1.2",
     "pytest-cov==2.7.1",
     "pytest-asyncio==0.10.0",
     "pytest-aiohttp==0.3.0",
@@ -13,7 +13,7 @@ _TEST_REQUIRE = [
     "isort==4.3.21",
 ]
 
-_VERSION = "0.8.5"
+_VERSION = "1.0.0"
 
 _PACKAGES = find_packages(exclude=["tests*"])
 
@@ -35,7 +35,7 @@ setup(
     ],
     keywords="api graphql protocol api rest relay tartiflette dailymotion",
     packages=_PACKAGES,
-    install_requires=["aiohttp<3.6.0,>=3.5.4", "tartiflette<0.13.0,>=0.12.0"],
+    install_requires=["aiohttp>=3.5.4,<3.7.0", "tartiflette>=0.12.0,<2.0.0"],
     tests_require=_TEST_REQUIRE,
     extras_require={"test": _TEST_REQUIRE},
     include_package_data=True,
