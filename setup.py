@@ -13,7 +13,7 @@ _TEST_REQUIRE = [
     "isort==4.3.21",
 ]
 
-_VERSION = "0.8.5"
+_VERSION = "1.0.0"
 
 _PACKAGES = find_packages(exclude=["tests*"])
 
