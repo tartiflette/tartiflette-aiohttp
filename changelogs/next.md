@@ -2,29 +2,6 @@
 
 ## Added
 
-- [ISSUE-55](https://github.com/tartiflette/tartiflette-aiohttp/issues/55) - Add
-a new optional `context_factory` parameter to the `register_graphql_handlers`
-function. This parameter can take a coroutine function which will be called on
-each request with the following signature:
-    ```python
-    async def context_factory(
-        context: Dict[str, Any], req: "aiohttp.web.Request"
-    ) -> Dict[str, Any]:
-        """
-        Generates a new context.
-        :param context: the value filled in through the `executor_context`
-        parameter
-        :param req: the incoming aiohttp request instance
-        :type context: Dict[str, Any]
-        :type req: aiohttp.web.Request
-        :return: the context for the incoming request
-        :rtype: Dict[str, Any]
-        """
-    ```
-
-The aim of this function will be to returns the context which will be forwarded
-to the Tartiflette engine on the `execute` or `subscribe` method.
-
 ## Changed
 
 ## Fixed
