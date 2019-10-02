@@ -1,6 +1,9 @@
+from functools import partial
 from unittest.mock import Mock
 
 import pytest
+
+from tartiflette_aiohttp import default_context_factory
 
 
 @pytest.mark.asyncio
@@ -31,18 +34,18 @@ async def test_handler__handle_query__context_unicity():
     a_req = Mock()
     a_req.app = {"ttftt_engine": tftt_engine}
 
-    ctx = {}
+    context_factory = partial(default_context_factory, context={})
 
     await _handle_query(
-        a_req, 'query { hello(name: "Chuck") }', None, None, ctx
+        a_req, 'query { hello(name: "Chuck") }', None, None, context_factory
     )
 
     await _handle_query(
-        a_req, 'query { hello(name: "Chuck") }', None, None, ctx
+        a_req, 'query { hello(name: "Chuck") }', None, None, context_factory
     )
 
     b_response = await _handle_query(
-        a_req, 'query { hello(name: "Chuck") }', None, None, ctx
+        a_req, 'query { hello(name: "Chuck") }', None, None, context_factory
     )
 
     assert b_response == {"data": {"hello": "hello 1"}}
@@ -71,7 +74,7 @@ async def test_handler__handle_query__operation_name():
     a_req = Mock()
     a_req.app = {"ttftt_engine": tftt_engine}
 
-    ctx = {}
+    context_factory = partial(default_context_factory, context={})
 
     result = await _handle_query(
         a_req,
@@ -82,7 +85,7 @@ async def test_handler__handle_query__operation_name():
         """,
         None,
         "B",
-        ctx,
+        context_factory,
     )
 
     assert result == {"data": {"hello": "hello Bar"}}
