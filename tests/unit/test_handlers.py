@@ -39,7 +39,7 @@ async def test_handler__handle_query():
         "query a {}",
         {"B": "C"},
         "a",
-        partial(default_context_factory, context={"D": "E"}),
+        partial(default_context_factory, {"D": "E"}),
     )
 
     assert a_response == "T"
@@ -71,7 +71,7 @@ async def test_handler__handle_query_nok():
         "query a {}",
         {"B": "C"},
         "a",
-        partial(default_context_factory, context={"D": "E"}),
+        partial(default_context_factory, {"D": "E"}),
     )
 
     assert a_response == {
@@ -191,7 +191,7 @@ async def test_handler__handle():
     a_method = CoroutineMock(return_value=("a", "b", "c"))
 
     await Handlers._handle(
-        a_method, a_req, partial(default_context_factory, context={})
+        a_method, a_req, partial(default_context_factory, {})
     )
 
     assert a_method.call_args_list == [((a_req,),)]

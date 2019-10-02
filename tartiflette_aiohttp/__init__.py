@@ -162,7 +162,7 @@ def register_graphql_handlers(
             "`context_factory` parameter should be a coroutine function."
         )
 
-    context_factory = partial(context_factory, context=executor_context)
+    context_factory = partial(context_factory, executor_context)
 
     if not engine:
         engine = Engine()

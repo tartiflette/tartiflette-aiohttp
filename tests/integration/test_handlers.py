@@ -34,7 +34,7 @@ async def test_handler__handle_query__context_unicity():
     a_req = Mock()
     a_req.app = {"ttftt_engine": tftt_engine}
 
-    context_factory = partial(default_context_factory, context={})
+    context_factory = partial(default_context_factory, {})
 
     await _handle_query(
         a_req, 'query { hello(name: "Chuck") }', None, None, context_factory
@@ -74,7 +74,7 @@ async def test_handler__handle_query__operation_name():
     a_req = Mock()
     a_req.app = {"ttftt_engine": tftt_engine}
 
-    context_factory = partial(default_context_factory, context={})
+    context_factory = partial(default_context_factory, {})
 
     result = await _handle_query(
         a_req,
