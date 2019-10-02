@@ -1,10 +1,11 @@
 import json
 
 from functools import partial
-from inspect import iscoroutine
-from typing import Any, Dict, List, Optional, Union
+from inspect import iscoroutine, iscoroutinefunction
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from tartiflette import Engine
+from tartiflette_aiohttp._context_factory import default_context_factory
 from tartiflette_aiohttp._graphiql import graphiql_handler
 from tartiflette_aiohttp._handler import Handlers
 from tartiflette_aiohttp._subscription_ws_handler import (
@@ -35,7 +36,7 @@ def validate_and_compute_graphiql_option(
 def _set_subscription_ws_handler(
     app: "Application",
     subscription_ws_endpoint: Optional[str],
-    context: Dict[str, Any],
+    context_factory: Callable,
 ) -> None:
     if not subscription_ws_endpoint:
         return
@@ -43,7 +44,7 @@ def _set_subscription_ws_handler(
     app.router.add_route(
         "GET",
         subscription_ws_endpoint,
-        AIOHTTPSubscriptionHandler(app, context),
+        AIOHTTPSubscriptionHandler(app, context_factory),
     )
 
 
@@ -116,6 +117,7 @@ def register_graphql_handlers(
     engine_modules: Optional[
         List[Union[str, Dict[str, Union[str, Dict[str, str]]]]]
     ] = None,
+    context_factory: Optional[Callable] = None,
 ) -> "Application":
     """Register a Tartiflette Engine to an app
 
@@ -133,10 +135,12 @@ def register_graphql_handlers(
         graphiql_enabled {bool} -- Determines whether or not we should handle a GraphiQL endpoint (default: {False})
         graphiql_options {dict} -- Customization options for the GraphiQL instance (default: {None})
         engine_modules: {Optional[List[Union[str, Dict[str, Union[str, Dict[str, str]]]]]]} -- Module to import (default:{None})
+        context_factory: {Optional[Callable]} -- coroutine function in charge of generating the context for each request (default: {None})
 
     Raises:
         Exception -- On bad sdl/engine parameter combinaison.
         Exception -- On unsupported HTTP Method.
+        Exception -- if `context_factory` is filled in without a coroutine function.
 
     Return:
         The app object.
@@ -149,6 +153,16 @@ def register_graphql_handlers(
 
     if not executor_http_methods:
         executor_http_methods = ["GET", "POST"]
+
+    if context_factory is None:
+        context_factory = default_context_factory
+
+    if not iscoroutinefunction(context_factory):
+        raise Exception(
+            "`context_factory` parameter should be a coroutine function."
+        )
+
+    context_factory = partial(context_factory, context=executor_context)
 
     if not engine:
         engine = Engine()
@@ -174,14 +188,14 @@ def register_graphql_handlers(
                 executor_http_endpoint,
                 partial(
                     getattr(Handlers, "handle_%s" % method.lower()),
-                    executor_context,
+                    context_factory=context_factory,
                 ),
             )
         except AttributeError:
             raise Exception("Unsupported < %s > http method" % method)
 
     _set_subscription_ws_handler(
-        app, subscription_ws_endpoint, executor_context
+        app, subscription_ws_endpoint, context_factory
     )
 
     _set_graphiql_handler(

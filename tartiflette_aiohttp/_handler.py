@@ -1,8 +1,6 @@
 import json
 import logging
 
-from copy import copy
-
 from aiohttp import web
 
 logger = logging.getLogger(__name__)
@@ -34,8 +32,11 @@ def prepare_response(data):
     return web.json_response(data, headers=headers, dumps=json.dumps)
 
 
-async def _handle_query(req, query, query_vars, operation_name, context):
-    context = copy(context)
+async def _handle_query(
+    req, query, query_vars, operation_name, context_factory
+):
+    context = await context_factory(req)
+
     try:
         if not operation_name:
             operation_name = None
@@ -94,13 +95,13 @@ async def _post_params(req):
 
 class Handlers:
     @staticmethod
-    async def _handle(param_func, user_c, req):
-        user_c["req"] = req
-
+    async def _handle(param_func, req, context_factory):
         try:
             qry, qry_vars, oprn_name = await param_func(req)
             return prepare_response(
-                await _handle_query(req, qry, qry_vars, oprn_name, user_c)
+                await _handle_query(
+                    req, qry, qry_vars, oprn_name, context_factory
+                )
             )
         except BadRequestError as e:
             return prepare_response(
@@ -108,9 +109,9 @@ class Handlers:
             )
 
     @staticmethod
-    async def handle_get(user_context, req):
-        return await Handlers._handle(_get_params, user_context, req)
+    async def handle_get(req, context_factory):
+        return await Handlers._handle(_get_params, req, context_factory)
 
     @staticmethod
-    async def handle_post(user_context, req):
-        return await Handlers._handle(_post_params, user_context, req)
+    async def handle_post(req, context_factory):
+        return await Handlers._handle(_post_params, req, context_factory)
