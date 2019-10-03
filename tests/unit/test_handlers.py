@@ -1,8 +1,11 @@
+from functools import partial
 from unittest.mock import Mock
 
 import pytest
 
 from asynctest import CoroutineMock
+
+from tartiflette_aiohttp import default_context_factory
 
 
 @pytest.mark.parametrize(
@@ -32,7 +35,11 @@ async def test_handler__handle_query():
     a_req.app = {"ttftt_engine": an_engine}
 
     a_response = await _handle_query(
-        a_req, "query a {}", {"B": "C"}, "a", {"D": "E"}
+        a_req,
+        "query a {}",
+        {"B": "C"},
+        "a",
+        partial(default_context_factory, {"D": "E"}),
     )
 
     assert a_response == "T"
@@ -42,7 +49,7 @@ async def test_handler__handle_query():
             {
                 "query": "query a {}",
                 "variables": {"B": "C"},
-                "context": {"D": "E"},
+                "context": {"D": "E", "req": a_req},
                 "operation_name": "a",
             },
         )
@@ -60,7 +67,11 @@ async def test_handler__handle_query_nok():
     a_req.app = {}
 
     a_response = await _handle_query(
-        a_req, "query a {}", {"B": "C"}, "a", {"D": "E"}
+        a_req,
+        "query a {}",
+        {"B": "C"},
+        "a",
+        partial(default_context_factory, {"D": "E"}),
     )
 
     assert a_response == {
@@ -179,7 +190,9 @@ async def test_handler__handle():
 
     a_method = CoroutineMock(return_value=("a", "b", "c"))
 
-    await Handlers._handle(a_method, {}, a_req)
+    await Handlers._handle(
+        a_method, a_req, partial(default_context_factory, {})
+    )
 
     assert a_method.call_args_list == [((a_req,),)]
 

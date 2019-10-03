@@ -1,7 +1,7 @@
 import json
 
 from asyncio import ensure_future, shield, wait
-from typing import Any, AsyncIterator, Dict, Optional, Set
+from typing import Any, AsyncIterator, Callable, Dict, Optional, Set
 
 from aiohttp import WSMsgType, web
 
@@ -79,9 +79,11 @@ class AIOHTTPConnectionContext:
 
 
 class AIOHTTPSubscriptionHandler:
-    def __init__(self, app: "Application", context: Dict[str, Any]) -> None:
+    def __init__(self, app: "Application", context_factory: Callable) -> None:
         self._app: "Application" = app
-        self._context = context
+        self._context_factory = context_factory
+        self._socket: Optional["web.WebSocketResponse"] = None
+        self._context: Optional[Dict[str, Any]] = None
 
     async def _send_message(
         self,
@@ -255,9 +257,8 @@ class AIOHTTPSubscriptionHandler:
         await self._on_close(connection_context, tasks)
 
     async def __call__(self, request: "Request") -> "WebSocketResponse":
-        self._socket = web.WebSocketResponse(  # pylint: disable=attribute-defined-outside-init
-            protocols=(WS_PROTOCOL,)
-        )
+        self._socket = web.WebSocketResponse(protocols=(WS_PROTOCOL,))
+        self._context = await self._context_factory(request)
         await self._socket.prepare(request)
         await shield(self._handle_request())
         return self._socket
