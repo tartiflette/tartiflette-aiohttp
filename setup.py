@@ -8,7 +8,7 @@ _TEST_REQUIRE = [
     "asynctest==0.13.0",
     "pytz",
     "pylint==2.4.2",
-    "xenon==0.5.5",
+    "xenon==0.6.0",
     "black==19.3b0",
     "isort==4.3.21",
 ]
