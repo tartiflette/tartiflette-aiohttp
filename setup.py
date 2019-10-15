@@ -8,12 +8,12 @@ _TEST_REQUIRE = [
     "asynctest==0.13.0",
     "pytz",
     "pylint==2.4.2",
-    "xenon==0.6.0",
+    "xenon==0.7.0",
     "black==19.3b0",
     "isort==4.3.21",
 ]
 
-_VERSION = "1.1.0"
+_VERSION = "1.1.1"
 
 _PACKAGES = find_packages(exclude=["tests*"])
 

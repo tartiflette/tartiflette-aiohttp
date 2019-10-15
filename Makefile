@@ -1,11 +1,18 @@
 SET_ALPHA_VERSION = 0
-PKG_VERSION := $(shell cat setup.py | grep "_VERSION =" | egrep -o "([0-9]+\\.[0-9]+\\.[0-9]+)")
+PKG_VERSION := $(shell cat setup.py | grep "_VERSION =" | egrep -o '[0-9]+\.[0-9]+\.[0-9]+(rc[0-9]+)?')
 
 REF := $(shell cat /github/workflow/event.json | jq ".ref")
 
 ifneq ($(REF),"refs/heads/master")
-PKG_VERSION := $(shell echo | awk -v pkg_version="$(PKG_VERSION)" -v build_number="$(shell date +\"%s\")" '{print pkg_version "a" build_number}')
+PKG_VERSION := $(shell echo | awk -v pkg_version="$(PKG_VERSION)" -v build_number="$(shell date +\"%s\")" '{print pkg_version "dev" build_number}')
 SET_ALPHA_VERSION = 1
+endif
+
+PATH_TO_MAKEFILE := /github/workspace/Makefile
+ifneq ("$(wildcard $(PATH_TO_MAKEFILE))","")
+IN_GITHUB_ACTION := 1
+else
+IN_GITHUB_ACTION := 0
 endif
 
 .PHONY: init
@@ -31,25 +38,33 @@ check-format:
 .PHONY: style
 style: check-format check-import
 	pylint tartiflette_aiohttp --rcfile=pylintrc
-
-.PHONY: complexity
-complexity:
-	xenon --max-absolute B --max-modules B --max-average A tartiflette_aiohttp
+ifeq ($(IN_GITHUB_ACTION),1)
+	make clean
+endif
 
 .PHONY: test-integration
 test-integration: clean
 	mkdir -p reports
 	py.test -s tests/integration --junitxml=reports/report_integ_tests.xml --cov . --cov-config .coveragerc --cov-report term-missing --cov-report xml:reports/coverage_integ.xml
+ifeq ($(IN_GITHUB_ACTION),1)
+	make clean
+endif
 
 .PHONY: test-unit
 test-unit: clean
 	mkdir -p reports
-	py.test -s tests/unit --junitxml=reports/report_unit_tests.xml --cov . --cov-config .coveragerc --cov-report term-missing --cov-report xml:reports/coverage_func.xml
+	py.test -s tests/unit --junitxml=reports/report_unit_tests.xml --cov . --cov-config .coveragerc --cov-report term-missing --cov-report xml:reports/coverage_unit.xml
+ifeq ($(IN_GITHUB_ACTION),1)
+	make clean
+endif
 
 .PHONY: test-functional
 test-functional: clean
 	mkdir -p reports
-	py.test -s tests/functional --junitxml=reports/report_func_tests.xml --cov . --cov-config .coveragerc --cov-report term-missing --cov-report xml:reports/coverage_unit.xml
+	py.test -s tests/functional --junitxml=reports/report_func_tests.xml --cov . --cov-config .coveragerc --cov-report term-missing --cov-report xml:reports/coverage_func.xml
+ifeq ($(IN_GITHUB_ACTION),1)
+	make clean
+endif
 
 .PHONY: test
 test: test-integration test-unit test-functional
@@ -63,7 +78,7 @@ clean:
 .PHONY: set-version
 set-version:
 ifneq ($(SET_ALPHA_VERSION), 0)
-	bash -c "sed -i \"s@_VERSION[ ]*=[ ]*[\\\"\'][0-9]\+\\.[0-9]\+\\.[0-9]\+[\\\"\'].*@_VERSION = \\\"$(PKG_VERSION)\\\"@\" setup.py"
+	bash -c "sed -i \"s@_VERSION[ ]*=[ ]*[\\\"\'][0-9]\+\\.[0-9]\+\\.[0-9]\+\(rc[0-9]\+\)\?[\\\"\'].*@_VERSION = \\\"$(PKG_VERSION)\\\"@\" setup.py"
 endif
 
 .PHONY: get-version
