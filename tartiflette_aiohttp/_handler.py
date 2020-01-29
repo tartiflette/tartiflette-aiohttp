@@ -3,6 +3,8 @@ import logging
 
 from aiohttp import web
 
+from ._reponse_headers import get_response_headers
+
 logger = logging.getLogger(__name__)
 
 
@@ -27,8 +29,7 @@ class BadRequestError(Exception):
 
 
 def prepare_response(data):
-    headers = {}
-    # TODO Do things with header here
+    headers = get_response_headers()
     return web.json_response(data, headers=headers, dumps=json.dumps)
 
 
