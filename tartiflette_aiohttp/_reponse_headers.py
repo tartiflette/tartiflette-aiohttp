@@ -9,7 +9,7 @@ except ImportError:
     pass
 
 
-def set_response_headers(headers=None):
+def set_response_headers(headers: dict):
     if _RESPONSE_HEADERS_VAR is not None:
         _RESPONSE_HEADERS_VAR.get().update(headers)
     else:
