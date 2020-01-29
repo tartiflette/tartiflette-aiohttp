@@ -10,7 +10,7 @@ except ImportError:
 
 
 def set_response_headers(headers=None):
-    if _RESPONSE_HEADERS_VAR:
+    if _RESPONSE_HEADERS_VAR is not None:
         _RESPONSE_HEADERS_VAR.get().update(headers)
     else:
         print(
@@ -19,6 +19,6 @@ def set_response_headers(headers=None):
 
 
 def get_response_headers():
-    if _RESPONSE_HEADERS_VAR:
+    if _RESPONSE_HEADERS_VAR is not None:
         return _RESPONSE_HEADERS_VAR.get()
     return {}
