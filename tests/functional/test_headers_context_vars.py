@@ -1,5 +1,6 @@
-import json
 import contextvars
+import json
+
 import pytest
 
 from aiohttp import web

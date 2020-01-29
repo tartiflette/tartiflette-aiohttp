@@ -7,6 +7,7 @@ from ._reponse_headers import get_response_headers
 
 logger = logging.getLogger(__name__)
 
+
 def _format_error(err):
     formatted_error = {"type": "internal_error", "message": "Server internal"}
 
