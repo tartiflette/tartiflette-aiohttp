@@ -207,3 +207,22 @@ web.run_app(
   - **default_query** *(Optional[str] = None)*: allows you to pre-fill the GraphiQL interface with a default query
   - **default_variables** *(Optional[dict] = None)*: allows you to pre-fill the GraphiQL interface with default variables
   - **default_headers** *(Optional[dict] = None)*: allows you to add default headers to each request sent through the GraphiQL instance
+
+
+## Advance Use Case
+
+### Response header manipulation from resolver
+
+It is possible to set header to the response directly from the resolver using `set_response_headers` method like:
+
+```python
+from tartiflette_aiohttp import set_response_headers
+
+@Resolver("Query.X")
+async def resolver_x(parent_result, args, ctx, info):
+    # do things
+    set_response_headers({"Header": "Value", "AnotherHeader": "AnotherValue"})
+    return result
+```
+
+> Note that this feature uses ContextVar and will only works for python 3.7.1 and later.
