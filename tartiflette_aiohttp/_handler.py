@@ -1,12 +1,11 @@
-import contextvars
 import json
 import logging
 
 from aiohttp import web
 
-response_headers_var = contextvars.ContextVar('response_headers', default={})
-logger = logging.getLogger(__name__)
+from ._reponse_headers import get_response_headers
 
+logger = logging.getLogger(__name__)
 
 def _format_error(err):
     formatted_error = {"type": "internal_error", "message": "Server internal"}
@@ -29,7 +28,7 @@ class BadRequestError(Exception):
 
 
 def prepare_response(data):
-    headers = response_headers_var.get()
+    headers = get_response_headers()
     return web.json_response(data, headers=headers, dumps=json.dumps)
 
 
