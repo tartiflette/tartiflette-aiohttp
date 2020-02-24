@@ -3,7 +3,6 @@ import json
 import pytest
 
 from aiohttp import web
-
 from tartiflette import Engine, Resolver, create_engine
 from tartiflette_aiohttp import register_graphql_handlers
 

@@ -8,8 +8,8 @@ from tartiflette import Engine
 from tartiflette_aiohttp._context_factory import default_context_factory
 from tartiflette_aiohttp._graphiql import graphiql_handler
 from tartiflette_aiohttp._handler import Handlers
-from tartiflette_aiohttp._subscription_ws_handler import (
-    AIOHTTPSubscriptionHandler,
+from tartiflette_aiohttp.graphql_ws_subscriptions import (
+    register_graphql_ws_subscriptions,
 )
 
 
@@ -41,10 +41,8 @@ def _set_subscription_ws_handler(
     if not subscription_ws_endpoint:
         return
 
-    app.router.add_route(
-        "GET",
-        subscription_ws_endpoint,
-        AIOHTTPSubscriptionHandler(app, context_factory),
+    register_graphql_ws_subscriptions(
+        app, context_factory, subscription_ws_endpoint
     )
 
 

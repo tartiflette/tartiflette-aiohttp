@@ -4,7 +4,6 @@ from unittest.mock import Mock
 import pytest
 
 from asynctest import CoroutineMock
-
 from tartiflette_aiohttp import default_context_factory
 
 
