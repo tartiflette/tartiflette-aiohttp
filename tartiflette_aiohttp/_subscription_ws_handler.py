@@ -1,6 +1,7 @@
 import json
 
-from asyncio import ensure_future, shield, wait
+from asyncio import CancelledError, create_task, ensure_future, shield, wait
+from contextlib import suppress
 from typing import Any, AsyncIterator, Callable, Dict, Optional, Set
 
 from aiohttp import WSMsgType, web
@@ -138,7 +139,10 @@ class AIOHTTPSubscriptionHandler:
     ) -> None:
         operation = connection_context.get_operation(operation_id)
         if operation is not None:
-            await operation.aclose()
+            task = create_task(operation.__anext__())
+            task.cancel()
+            with suppress(CancelledError):
+                await task
             connection_context.remove_operation(operation_id)
 
     async def _on_start(
