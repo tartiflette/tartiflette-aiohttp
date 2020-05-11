@@ -7,7 +7,7 @@ _TEST_REQUIRE = [
     "pytest-aiohttp==0.3.0",
     "asynctest==0.13.0",
     "pytz",
-    "pylint==2.4.4",
+    "pylint==2.5.2",
     "xenon==0.7.0",
     "black==19.10b0",
     "isort==4.3.21",
