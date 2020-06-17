@@ -1,7 +1,7 @@
 from setuptools import find_packages, setup
 
 _TEST_REQUIRE = [
-    "pytest==5.4.1",
+    "pytest==5.4.3",
     "pytest-cov==2.8.1",
     "pytest-asyncio==0.12.0",
     "pytest-aiohttp==0.3.0",
