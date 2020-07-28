@@ -11,6 +11,7 @@ _TEST_REQUIRE = [
     "xenon==0.7.0",
     "black==19.10b0",
     "isort==4.3.21",
+    "async_generator==1.10;python_version=='3.6.*'",
 ]
 
 _VERSION = "1.2.0"

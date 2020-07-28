@@ -1,7 +1,7 @@
 import json
 
 from functools import partial
-from inspect import iscoroutine, iscoroutinefunction
+from inspect import iscoroutine
 from typing import Any, Callable, Dict, List, Optional, Union
 
 from tartiflette import Engine
@@ -157,11 +157,6 @@ def register_graphql_handlers(
 
     if context_factory is None:
         context_factory = default_context_factory
-
-    if not iscoroutinefunction(context_factory):
-        raise Exception(
-            "`context_factory` parameter should be a coroutine function."
-        )
 
     context_factory = partial(context_factory, executor_context)
 

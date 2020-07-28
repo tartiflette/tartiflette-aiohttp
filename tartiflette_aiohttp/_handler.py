@@ -28,6 +28,17 @@ class BadRequestError(Exception):
     pass
 
 
+class NullAsyncContextManager:
+    def __init__(self, coroutine):
+        self.coroutine = coroutine
+
+    async def __aenter__(self):
+        return await self.coroutine
+
+    async def __aexit__(self, exc_type, exc, traceback):
+        pass
+
+
 def prepare_response(data):
     headers = get_response_headers()
     return web.json_response(data, headers=headers, dumps=json.dumps)
@@ -36,21 +47,28 @@ def prepare_response(data):
 async def _handle_query(
     req, query, query_vars, operation_name, context_factory
 ):
-    context = await context_factory(req)
+    context_factory_mgr = context_factory(req)
 
-    try:
-        if not operation_name:
-            operation_name = None
+    # backwards compatibility with versions <= 1.2.0
+    # if context_factory is not a context manager, assume it is a coroutine function,
+    # and wrap it in a null context manager so it works with "async with" statement.
+    if not hasattr(context_factory_mgr, "__aenter__"):
+        context_factory_mgr = NullAsyncContextManager(context_factory_mgr)
 
-        return await req.app["ttftt_engine"].execute(
-            query=query,
-            variables=query_vars,
-            context=context,
-            operation_name=operation_name,
-        )
-    except Exception as e:  # pylint: disable=broad-except
-        logger.exception(e)
-        return {"data": None, "errors": _format_errors([e])}
+    async with context_factory_mgr as context:
+        try:
+            if not operation_name:
+                operation_name = None
+
+            return await req.app["ttftt_engine"].execute(
+                query=query,
+                variables=query_vars,
+                context=context,
+                operation_name=operation_name,
+            )
+        except Exception as e:  # pylint: disable=broad-except
+            logger.exception(e)
+            return {"data": None, "errors": _format_errors([e])}
 
 
 async def _get_params(req):

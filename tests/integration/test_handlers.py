@@ -1,3 +1,7 @@
+try:
+    from contextlib import asynccontextmanager  # Python 3.7
+except ImportError:
+    from async_generator import asynccontextmanager  # Python 3.6
 from functools import partial
 from unittest.mock import Mock
 
@@ -49,6 +53,47 @@ async def test_handler__handle_query__context_unicity():
     )
 
     assert b_response == {"data": {"hello": "hello 1"}}
+
+
+@pytest.mark.asyncio
+async def test_handler__handle_query__context_manager_as_factory():
+    from tartiflette_aiohttp._handler import _handle_query
+    from tartiflette import Resolver, create_engine
+
+    @Resolver(
+        "Query.hello",
+        schema_name="test_handler__handle_query__context_manager_as_factory",
+    )
+    async def resolver_hello(parent, args, ctx, info):
+        return "hello " + ", ".join(ctx.keys())
+
+    tftt_engine = await create_engine(
+        """
+        type Query {
+            hello(name: String): String
+        }
+        """,
+        schema_name="test_handler__handle_query__context_manager_as_factory",
+    )
+
+    req = Mock()
+    req.app = {"ttftt_engine": tftt_engine}
+
+    @asynccontextmanager
+    async def custom_context_factory(context, req):
+        context["entered"] = True
+        yield context
+        context["exited"] = True
+
+    context = {}
+    context_factory = partial(custom_context_factory, context)
+
+    response = await _handle_query(
+        req, 'query { hello(name: "Chuck") }', None, None, context_factory
+    )
+    assert context.get("entered")
+    assert context.get("exited")
+    assert response == {"data": {"hello": "hello entered"}}
 
 
 @pytest.mark.asyncio
