@@ -28,17 +28,6 @@ class BadRequestError(Exception):
     pass
 
 
-class NullAsyncContextManager:
-    def __init__(self, coroutine):
-        self.coroutine = coroutine
-
-    async def __aenter__(self):
-        return await self.coroutine
-
-    async def __aexit__(self, exc_type, exc, traceback):
-        pass
-
-
 def prepare_response(data):
     headers = get_response_headers()
     return web.json_response(data, headers=headers, dumps=json.dumps)
@@ -48,12 +37,6 @@ async def _handle_query(
     req, query, query_vars, operation_name, context_factory
 ):
     context_factory_mgr = context_factory(req)
-
-    # backwards compatibility with versions <= 1.2.0
-    # if context_factory is not a context manager, assume it is a coroutine function,
-    # and wrap it in a null context manager so it works with "async with" statement.
-    if not hasattr(context_factory_mgr, "__aenter__"):
-        context_factory_mgr = NullAsyncContextManager(context_factory_mgr)
 
     async with context_factory_mgr as context:
         try:

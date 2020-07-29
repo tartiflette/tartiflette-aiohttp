@@ -1,5 +1,5 @@
 try:
-    from contextlib import asynccontextmanager  # Python 3.7
+    from contextlib import asynccontextmanager  # Python 3.7+
 except ImportError:
     from async_generator import asynccontextmanager  # Python 3.6
 from functools import partial

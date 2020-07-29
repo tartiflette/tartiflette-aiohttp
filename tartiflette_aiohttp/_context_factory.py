@@ -1,8 +1,14 @@
 from typing import Any, Dict
 
+try:
+    from contextlib import asynccontextmanager  # Python 3.7+
+except ImportError:
+    from async_generator import asynccontextmanager  # Python 3.6
+
 __all__ = ("default_context_factory",)
 
 
+@asynccontextmanager
 async def default_context_factory(
     context: Dict[str, Any], req: "aiohttp.web.Request"
 ) -> Dict[str, Any]:
@@ -16,4 +22,4 @@ async def default_context_factory(
     :return: the context for the incoming request
     :rtype: Dict[str, Any]
     """
-    return {**context, "req": req}
+    yield {**context, "req": req}
