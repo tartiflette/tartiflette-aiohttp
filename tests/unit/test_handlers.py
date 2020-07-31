@@ -83,8 +83,7 @@ async def test_handler__handle_query_nok():
 
 @pytest.mark.asyncio
 async def test_handler__get_params_raises():
-    from tartiflette_aiohttp._handler import _get_params
-    from tartiflette_aiohttp._handler import BadRequestError
+    from tartiflette_aiohttp._handler import BadRequestError, _get_params
 
     req = Mock()
     req.query = {}
@@ -128,8 +127,7 @@ async def test_handler__get_params(rvalue, expected):
 
 @pytest.mark.asyncio
 async def test_handler__post_params_raises():
-    from tartiflette_aiohttp._handler import _post_params
-    from tartiflette_aiohttp._handler import BadRequestError
+    from tartiflette_aiohttp._handler import BadRequestError, _post_params
 
     async def ninja(*args, **kwargs):
         raise Exception("LOL")
@@ -199,8 +197,7 @@ async def test_handler__handle():
 
 @pytest.mark.asyncio
 async def test_handler__handle_nok():
-    from tartiflette_aiohttp._handler import Handlers
-    from tartiflette_aiohttp._handler import BadRequestError
+    from tartiflette_aiohttp._handler import BadRequestError, Handlers
 
     an_engine = Mock()
     an_engine.execute = CoroutineMock(return_value="T")
@@ -218,8 +215,7 @@ async def test_handler__handle_nok():
 
 @pytest.mark.asyncio
 async def test_handler__handle_get():
-    from tartiflette_aiohttp._handler import _get_params
-    from tartiflette_aiohttp._handler import Handlers
+    from tartiflette_aiohttp._handler import Handlers, _get_params
 
     Handlers._handle = CoroutineMock(return_value="T")
 
@@ -234,8 +230,7 @@ async def test_handler__handle_get():
 
 @pytest.mark.asyncio
 async def test_handler__handle_post():
-    from tartiflette_aiohttp._handler import _post_params
-    from tartiflette_aiohttp._handler import Handlers
+    from tartiflette_aiohttp._handler import Handlers, _post_params
 
     Handlers._handle = CoroutineMock(return_value="T")
 

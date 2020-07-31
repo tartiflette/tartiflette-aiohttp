@@ -2,6 +2,7 @@ try:
     from contextlib import asynccontextmanager  # Python 3.7+
 except ImportError:
     from async_generator import asynccontextmanager  # Python 3.6
+
 from functools import partial
 from unittest.mock import Mock
 
@@ -12,8 +13,8 @@ from tartiflette_aiohttp import default_context_factory
 
 @pytest.mark.asyncio
 async def test_handler__handle_query__context_unicity():
-    from tartiflette_aiohttp._handler import _handle_query
     from tartiflette import Resolver, create_engine
+    from tartiflette_aiohttp._handler import _handle_query
 
     @Resolver(
         "Query.hello",
@@ -57,8 +58,8 @@ async def test_handler__handle_query__context_unicity():
 
 @pytest.mark.asyncio
 async def test_handler__handle_query__context_manager_as_factory():
-    from tartiflette_aiohttp._handler import _handle_query
     from tartiflette import Resolver, create_engine
+    from tartiflette_aiohttp._handler import _handle_query
 
     @Resolver(
         "Query.hello",
@@ -98,8 +99,8 @@ async def test_handler__handle_query__context_manager_as_factory():
 
 @pytest.mark.asyncio
 async def test_handler__handle_query__operation_name():
-    from tartiflette_aiohttp._handler import _handle_query
     from tartiflette import Resolver, create_engine
+    from tartiflette_aiohttp._handler import _handle_query
 
     @Resolver(
         "Query.hello", schema_name="test_handler__handle_query__operation_name"

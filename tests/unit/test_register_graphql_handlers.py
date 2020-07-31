@@ -16,8 +16,9 @@ def test_register_graphql_handlers_raises():
 
 
 def test_register_graphql_handlers():
-    from tartiflette_aiohttp import register_graphql_handlers
     from functools import partial
+
+    from tartiflette_aiohttp import register_graphql_handlers
     from tartiflette_aiohttp._handler import Handlers
 
     class app(dict):
@@ -37,8 +38,9 @@ def test_register_graphql_handlers():
 
 
 def test_register_graphql_handlers():
-    from tartiflette_aiohttp import register_graphql_handlers
     from functools import partial
+
+    from tartiflette_aiohttp import register_graphql_handlers
     from tartiflette_aiohttp._handler import Handlers
 
     class app(dict):
