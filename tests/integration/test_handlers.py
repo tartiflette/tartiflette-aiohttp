@@ -11,10 +11,14 @@ import pytest
 from tartiflette_aiohttp import default_context_factory
 
 
+def prepare_response(_, data, __):
+    return data
+
+
 @pytest.mark.asyncio
 async def test_handler__handle_query__context_unicity():
     from tartiflette import Resolver, create_engine
-    from tartiflette_aiohttp._handler import _handle_query
+    from tartiflette_aiohttp._handler import Handlers
 
     @Resolver(
         "Query.hello",
@@ -37,21 +41,21 @@ async def test_handler__handle_query__context_unicity():
     )
 
     a_req = Mock()
-    a_req.app = {"ttftt_engine": tftt_engine}
+    a_req.app = {
+        "ttftt_engine": tftt_engine,
+        "response_formatter": prepare_response,
+    }
 
     context_factory = partial(default_context_factory, {})
 
-    await _handle_query(
-        a_req, 'query { hello(name: "Chuck") }', None, None, context_factory
-    )
+    async def _get_param(*_, **__):
+        return ('query { hello(name: "Chuck") }', None, None)
 
-    await _handle_query(
-        a_req, 'query { hello(name: "Chuck") }', None, None, context_factory
-    )
+    await Handlers._handle(_get_param, a_req, context_factory)
 
-    b_response = await _handle_query(
-        a_req, 'query { hello(name: "Chuck") }', None, None, context_factory
-    )
+    await Handlers._handle(_get_param, a_req, context_factory)
+
+    b_response = await Handlers._handle(_get_param, a_req, context_factory)
 
     assert b_response == {"data": {"hello": "hello 1"}}
 
@@ -59,7 +63,7 @@ async def test_handler__handle_query__context_unicity():
 @pytest.mark.asyncio
 async def test_handler__handle_query__context_manager_as_factory():
     from tartiflette import Resolver, create_engine
-    from tartiflette_aiohttp._handler import _handle_query
+    from tartiflette_aiohttp._handler import Handlers
 
     @Resolver(
         "Query.hello",
@@ -78,7 +82,10 @@ async def test_handler__handle_query__context_manager_as_factory():
     )
 
     req = Mock()
-    req.app = {"ttftt_engine": tftt_engine}
+    req.app = {
+        "ttftt_engine": tftt_engine,
+        "response_formatter": prepare_response,
+    }
 
     @asynccontextmanager
     async def custom_context_factory(context, req):
@@ -89,9 +96,10 @@ async def test_handler__handle_query__context_manager_as_factory():
     context = {}
     context_factory = partial(custom_context_factory, context)
 
-    response = await _handle_query(
-        req, 'query { hello(name: "Chuck") }', None, None, context_factory
-    )
+    async def _get_param(*_, **__):
+        return ('query { hello(name: "Chuck") }', None, None)
+
+    response = await Handlers._handle(_get_param, req, context_factory)
     assert context.get("entered")
     assert context.get("exited")
     assert response == {"data": {"hello": "hello entered"}}
@@ -100,7 +108,7 @@ async def test_handler__handle_query__context_manager_as_factory():
 @pytest.mark.asyncio
 async def test_handler__handle_query__operation_name():
     from tartiflette import Resolver, create_engine
-    from tartiflette_aiohttp._handler import _handle_query
+    from tartiflette_aiohttp._handler import Handlers
 
     @Resolver(
         "Query.hello", schema_name="test_handler__handle_query__operation_name"
@@ -118,20 +126,24 @@ async def test_handler__handle_query__operation_name():
     )
 
     a_req = Mock()
-    a_req.app = {"ttftt_engine": tftt_engine}
+    a_req.app = {
+        "ttftt_engine": tftt_engine,
+        "response_formatter": prepare_response,
+    }
 
     context_factory = partial(default_context_factory, {})
 
-    result = await _handle_query(
-        a_req,
-        """
-        query A { hello(name: "Foo") }
-        query B { hello(name: "Bar") }
-        query C { hello(name: "Baz") }
-        """,
-        None,
-        "B",
-        context_factory,
-    )
+    async def _get_param(*_, **__):
+        return (
+            """
+            query A { hello(name: "Foo") }
+            query B { hello(name: "Bar") }
+            query C { hello(name: "Baz") }
+            """,
+            None,
+            "B",
+        )
+
+    result = await Handlers._handle(_get_param, a_req, context_factory,)
 
     assert result == {"data": {"hello": "hello Bar"}}

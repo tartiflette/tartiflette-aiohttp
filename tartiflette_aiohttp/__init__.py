@@ -2,12 +2,21 @@ import json
 
 from functools import partial
 from inspect import iscoroutine
-from typing import Any, Dict, List, Optional, Union
+from typing import (
+    Any,
+    AsyncContextManager,
+    Awaitable,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Union,
+)
 
 from tartiflette import Engine
 from tartiflette_aiohttp._context_factory import default_context_factory
 from tartiflette_aiohttp._graphiql import graphiql_handler
-from tartiflette_aiohttp._handler import Handlers
+from tartiflette_aiohttp._handler import Handlers, prepare_response
 from tartiflette_aiohttp._reponse_headers import set_response_headers
 from tartiflette_aiohttp._subscription_ws_handler import (
     AIOHTTPSubscriptionHandler,
@@ -105,7 +114,7 @@ async def _await_on_startup(app):
 
 
 def register_graphql_handlers(
-    app: "Application",
+    app: "aiohttp.web.Application",
     engine_sdl: str = None,
     engine_schema_name: str = "default",
     executor_context: Optional[Dict[str, Any]] = None,
@@ -118,8 +127,14 @@ def register_graphql_handlers(
     engine_modules: Optional[
         List[Union[str, Dict[str, Union[str, Dict[str, str]]]]]
     ] = None,
-    context_factory: Optional["AbstractAsyncContextManager"] = None,
-) -> "Application":
+    context_factory: Optional[AsyncContextManager] = None,
+    response_formatter: Optional[
+        Callable[
+            ["aiohttp.web.Request", Dict[str, Any], Dict[str, Any]],
+            "aiohttp.web.Response",
+        ]
+    ] = None,
+) -> "aiohttp.web.Application":
     """Register a Tartiflette Engine to an app
 
     Pass a SDL or an already initialized Engine, not both, not neither.
@@ -136,8 +151,8 @@ def register_graphql_handlers(
         graphiql_enabled {bool} -- Determines whether or not we should handle a GraphiQL endpoint (default: {False})
         graphiql_options {dict} -- Customization options for the GraphiQL instance (default: {None})
         engine_modules: {Optional[List[Union[str, Dict[str, Union[str, Dict[str, str]]]]]]} -- Module to import (default:{None})
-        context_factory: {Optional[AbstractAsyncContextManager]} -- asynccontextmanager in charge of generating the context for each request (default: {None})
-
+        context_factory: {Optional[AsyncContextManager]} -- asynccontextmanager in charge of generating the context for each request (default: {None})
+        response_formatter: {Optional[Callable[[aiohttp.web.Request, Dict[str, Any], Dict[str, Any]], aiohttp.web.Response]]} -- In charger of the transformation of the resulting data into an aiohttp.web.Response (default: {None})
     Raises:
         Exception -- On bad sdl/engine parameter combinaison.
         Exception -- On unsupported HTTP Method.
@@ -175,6 +190,7 @@ def register_graphql_handlers(
         )
 
     app["ttftt_engine"] = engine
+    app["response_formatter"] = response_formatter or prepare_response
 
     for method in executor_http_methods:
         try:
