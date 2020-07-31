@@ -147,3 +147,44 @@ async def test_handler__handle_query__operation_name():
     result = await Handlers._handle(_get_param, a_req, context_factory,)
 
     assert result == {"data": {"hello": "hello Bar"}}
+
+
+@pytest.mark.asyncio
+async def test_handler__handle_query__prepare_response_is_called():
+    from tartiflette import Resolver, create_engine
+    from tartiflette_aiohttp._handler import Handlers
+
+    @Resolver(
+        "Query.hello",
+        schema_name="test_handler__handle_query__prepare_response_is_called",
+    )
+    async def resolver_hello(parent, args, ctx, info):
+        return "hello " + ", ".join(ctx.keys())
+
+    tftt_engine = await create_engine(
+        """
+        type Query {
+            hello(name: String): String
+        }
+        """,
+        schema_name="test_handler__handle_query__prepare_response_is_called",
+    )
+
+    req = Mock()
+    req.app = {
+        "ttftt_engine": tftt_engine,
+        "response_formatter": Mock(side_effect=prepare_response),
+    }
+
+    @asynccontextmanager
+    async def custom_context_factory(context, req):
+        yield context
+
+    context = {}
+    context_factory = partial(custom_context_factory, context)
+
+    async def _get_param(*_, **__):
+        return ('query { hello(name: "Chuck") }', None, None)
+
+    response = await Handlers._handle(_get_param, req, context_factory)
+    assert req.app["response_formatter"].called
