@@ -1,8 +1,8 @@
 import json
 
 from functools import partial
-from inspect import iscoroutine, iscoroutinefunction
-from typing import Any, Callable, Dict, List, Optional, Union
+from inspect import iscoroutine
+from typing import Any, Dict, List, Optional, Union
 
 from tartiflette import Engine
 from tartiflette_aiohttp._context_factory import default_context_factory
@@ -37,7 +37,7 @@ def validate_and_compute_graphiql_option(
 def _set_subscription_ws_handler(
     app: "Application",
     subscription_ws_endpoint: Optional[str],
-    context_factory: Callable,
+    context_factory: "AbstractAsyncContextManager",
 ) -> None:
     if not subscription_ws_endpoint:
         return
@@ -118,7 +118,7 @@ def register_graphql_handlers(
     engine_modules: Optional[
         List[Union[str, Dict[str, Union[str, Dict[str, str]]]]]
     ] = None,
-    context_factory: Optional[Callable] = None,
+    context_factory: Optional["AbstractAsyncContextManager"] = None,
 ) -> "Application":
     """Register a Tartiflette Engine to an app
 
@@ -136,12 +136,11 @@ def register_graphql_handlers(
         graphiql_enabled {bool} -- Determines whether or not we should handle a GraphiQL endpoint (default: {False})
         graphiql_options {dict} -- Customization options for the GraphiQL instance (default: {None})
         engine_modules: {Optional[List[Union[str, Dict[str, Union[str, Dict[str, str]]]]]]} -- Module to import (default:{None})
-        context_factory: {Optional[Callable]} -- coroutine function in charge of generating the context for each request (default: {None})
+        context_factory: {Optional[AbstractAsyncContextManager]} -- asynccontextmanager in charge of generating the context for each request (default: {None})
 
     Raises:
         Exception -- On bad sdl/engine parameter combinaison.
         Exception -- On unsupported HTTP Method.
-        Exception -- if `context_factory` is filled in without a coroutine function.
 
     Return:
         The app object.
@@ -157,11 +156,6 @@ def register_graphql_handlers(
 
     if context_factory is None:
         context_factory = default_context_factory
-
-    if not iscoroutinefunction(context_factory):
-        raise Exception(
-            "`context_factory` parameter should be a coroutine function."
-        )
 
     context_factory = partial(context_factory, executor_context)
 

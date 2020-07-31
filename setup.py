@@ -11,6 +11,7 @@ _TEST_REQUIRE = [
     "xenon==0.7.0",
     "black==19.10b0",
     "isort==4.3.21",
+    "async_generator==1.10;python_version=='3.6.*'",
 ]
 
 _VERSION = "1.2.0"
@@ -35,7 +36,11 @@ setup(
     ],
     keywords="api graphql protocol api rest relay tartiflette dailymotion",
     packages=_PACKAGES,
-    install_requires=["aiohttp>=3.5.4,<3.7.0", "tartiflette>=0.12.0,<2.0.0"],
+    install_requires=[
+        "aiohttp>=3.5.4,<3.7.0",
+        "async_generator;python_version=='3.6.*'",
+        "tartiflette>=0.12.0,<2.0.0",
+    ],
     tests_require=_TEST_REQUIRE,
     extras_require={"test": _TEST_REQUIRE},
     include_package_data=True,

@@ -36,21 +36,22 @@ def prepare_response(data):
 async def _handle_query(
     req, query, query_vars, operation_name, context_factory
 ):
-    context = await context_factory(req)
+    context_factory_mgr = context_factory(req)
 
-    try:
-        if not operation_name:
-            operation_name = None
+    async with context_factory_mgr as context:
+        try:
+            if not operation_name:
+                operation_name = None
 
-        return await req.app["ttftt_engine"].execute(
-            query=query,
-            variables=query_vars,
-            context=context,
-            operation_name=operation_name,
-        )
-    except Exception as e:  # pylint: disable=broad-except
-        logger.exception(e)
-        return {"data": None, "errors": _format_errors([e])}
+            return await req.app["ttftt_engine"].execute(
+                query=query,
+                variables=query_vars,
+                context=context,
+                operation_name=operation_name,
+            )
+        except Exception as e:  # pylint: disable=broad-except
+            logger.exception(e)
+            return {"data": None, "errors": _format_errors([e])}
 
 
 async def _get_params(req):
