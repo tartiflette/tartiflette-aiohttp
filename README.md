@@ -93,7 +93,7 @@ web.run_app(
   - Can be a path to an SDL
   - Can be an array of paths which contain the SDLs
 * **engine_schema_name**: Name of the schema used by the built-in engine. Useful for advanced use-cases, see [Schema Registry API](https://tartiflette.io/docs/api/schema-registry).
-* **executor_context**: Context which will be passed to each resolver (as a dict). Very useful for passing handlers to services, functions or data that you want to use in your resolvers. The context reference is **unique** per request, a shallow copy is created based on the context passed. 
+* **executor_context**: Context which will be passed to each resolver (as a dict). Very useful for passing handlers to services, functions or data that you want to use in your resolvers. The context reference is **unique** per request, a shallow copy is created based on the context passed.
   - **req**: Request object from `aiohttp`
   - **app**: Application object from `aiohttp`
 * **executor_http_endpoint**: Endpoint where the GraphQL Engine will be attached, by default on `/graphql`
@@ -226,3 +226,26 @@ async def resolver_x(parent_result, args, ctx, info):
 ```
 
 > Note that this feature uses ContextVar and will only works for python 3.7.1 and later.
+
+OR it is also possible to do, if you do not have ContextVar, or don't want to use them:
+
+```python
+from aiohttp import web
+
+def a_callable(req, data, ctx):
+    return web.json_response(data, headers=ctx["_any_custom_key"])
+
+web.run_app(
+    register_graphql_handlers(
+        app=web.Application(),
+        engine_sdl=_SDL,
+        response_formatter=a_callable
+    )
+)
+
+
+@Resolver("Type.field_name")
+async def fiel_name_resolver(pr, args, ctx, info):
+    ctx["_any_custom_key"] = {"X-Header": "What a wonderfull value"}
+    return something
+```
