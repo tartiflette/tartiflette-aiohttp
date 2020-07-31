@@ -28,30 +28,25 @@ class BadRequestError(Exception):
     pass
 
 
-def prepare_response(data):
+def prepare_response(_req, data, _ctx):
     headers = get_response_headers()
     return web.json_response(data, headers=headers, dumps=json.dumps)
 
 
-async def _handle_query(
-    req, query, query_vars, operation_name, context_factory
-):
-    context_factory_mgr = context_factory(req)
+async def _handle_query(req, query, query_vars, operation_name, context):
+    try:
+        if not operation_name:
+            operation_name = None
 
-    async with context_factory_mgr as context:
-        try:
-            if not operation_name:
-                operation_name = None
-
-            return await req.app["ttftt_engine"].execute(
-                query=query,
-                variables=query_vars,
-                context=context,
-                operation_name=operation_name,
-            )
-        except Exception as e:  # pylint: disable=broad-except
-            logger.exception(e)
-            return {"data": None, "errors": _format_errors([e])}
+        return await req.app["ttftt_engine"].execute(
+            query=query,
+            variables=query_vars,
+            context=context,
+            operation_name=operation_name,
+        )
+    except Exception as e:  # pylint: disable=broad-except
+        logger.exception(e)
+        return {"data": None, "errors": _format_errors([e])}
 
 
 async def _get_params(req):
@@ -98,17 +93,18 @@ async def _post_params(req):
 class Handlers:
     @staticmethod
     async def _handle(param_func, req, context_factory):
-        try:
-            qry, qry_vars, oprn_name = await param_func(req)
-            return prepare_response(
-                await _handle_query(
-                    req, qry, qry_vars, oprn_name, context_factory
+        context_factory_mgr = context_factory(req)
+
+        async with context_factory_mgr as context:
+            try:
+                qry, qry_vars, oprn_name = await param_func(req)
+                data = await _handle_query(
+                    req, qry, qry_vars, oprn_name, context
                 )
-            )
-        except BadRequestError as e:
-            return prepare_response(
-                {"data": None, "errors": _format_errors([e])}
-            )
+            except BadRequestError as e:
+                data = {"data": None, "errors": _format_errors([e])}
+
+            return req.app["response_formatter"](req, data, context)
 
     @staticmethod
     async def handle_get(req, context_factory):

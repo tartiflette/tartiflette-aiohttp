@@ -32,14 +32,13 @@ async def test_handler__handle_query():
     an_engine.execute = CoroutineMock(return_value="T")
 
     a_req = Mock()
-    a_req.app = {"ttftt_engine": an_engine}
+    a_req.app = {
+        "ttftt_engine": an_engine,
+        "response_formatter": _prepare_resp,
+    }
 
     a_response = await _handle_query(
-        a_req,
-        "query a {}",
-        {"B": "C"},
-        "a",
-        partial(default_context_factory, {"D": "E"}),
+        a_req, "query a {}", {"B": "C"}, "a", {"D": "E"}
     )
 
     assert a_response == "T"
@@ -49,11 +48,15 @@ async def test_handler__handle_query():
             {
                 "query": "query a {}",
                 "variables": {"B": "C"},
-                "context": {"D": "E", "req": a_req},
+                "context": {"D": "E"},
                 "operation_name": "a",
             },
         )
     ]
+
+
+def _prepare_resp(_, data, __):
+    return data
 
 
 @pytest.mark.asyncio
@@ -64,21 +67,24 @@ async def test_handler__handle_query_nok():
     an_engine.execute = CoroutineMock(return_value="T")
 
     a_req = Mock()
-    a_req.app = {}
+    a_req.app = {"response_formatter": _prepare_resp}
+
+    def _get_params(*_, **__):
+        return (
+            "query a {}",
+            {"B": "C"},
+            "a",
+        )
 
     a_response = await _handle_query(
-        a_req,
-        "query a {}",
-        {"B": "C"},
-        "a",
-        partial(default_context_factory, {"D": "E"}),
+        a_req, "query a {}", {"B": "C"}, "a", {"D": "E"},
     )
 
     assert a_response == {
         "data": None,
         "errors": [{"message": "'ttftt_engine'", "type": "internal_error"}],
     }
-    assert an_engine.execute.called == False
+    assert an_engine.execute.called is False
 
 
 @pytest.mark.asyncio
@@ -184,7 +190,10 @@ async def test_handler__handle():
     an_engine.execute = CoroutineMock(return_value="T")
 
     a_req = Mock()
-    a_req.app = {"ttftt_engine": an_engine}
+    a_req.app = {
+        "ttftt_engine": an_engine,
+        "response_formatter": _prepare_resp,
+    }
 
     a_method = CoroutineMock(return_value=("a", "b", "c"))
 
@@ -203,14 +212,16 @@ async def test_handler__handle_nok():
     an_engine.execute = CoroutineMock(return_value="T")
 
     a_req = Mock()
-    a_req.app = {}
+    a_req.app = {"response_formatter": _prepare_resp}
 
     async def ninja(*args, **kwargs):
         raise BadRequestError("a")
 
     a_method = ninja
 
-    await Handlers._handle(a_method, {}, a_req)
+    await Handlers._handle(
+        a_method, a_req, partial(default_context_factory, {})
+    )
 
 
 @pytest.mark.asyncio
