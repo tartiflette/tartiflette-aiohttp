@@ -77,7 +77,11 @@ async def test_handler__handle_query_nok():
         )
 
     a_response = await _handle_query(
-        a_req, "query a {}", {"B": "C"}, "a", {"D": "E"},
+        a_req,
+        "query a {}",
+        {"B": "C"},
+        "a",
+        {"D": "E"},
     )
 
     assert a_response == {

@@ -144,7 +144,11 @@ async def test_handler__handle_query__operation_name():
             "B",
         )
 
-    result = await Handlers._handle(_get_param, a_req, context_factory,)
+    result = await Handlers._handle(
+        _get_param,
+        a_req,
+        context_factory,
+    )
 
     assert result == {"data": {"hello": "hello Bar"}}
 
