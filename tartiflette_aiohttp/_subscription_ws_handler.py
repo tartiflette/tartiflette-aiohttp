@@ -262,7 +262,8 @@ class AIOHTTPSubscriptionHandler:
 
     async def __call__(self, request: "Request") -> "WebSocketResponse":
         self._socket = web.WebSocketResponse(protocols=(WS_PROTOCOL,))
-        self._context = await self._context_factory(request)
-        await self._socket.prepare(request)
-        await shield(self._handle_request())
-        return self._socket
+        async with self._context_factory(request) as ctx:
+            self._context = ctx
+            await self._socket.prepare(request)
+            await shield(self._handle_request())
+            return self._socket
