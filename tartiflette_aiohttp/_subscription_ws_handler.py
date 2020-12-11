@@ -75,20 +75,8 @@ class AIOHTTPConnectionContext:
             return
         await self._socket.send_str(data)
 
-    async def close(self, code: int) -> None:
-        await self._socket.close(code=code)
-
-
-class AIOHTTPSubscriptionHandler:
-    def __init__(self, app: "Application", context_factory: Callable) -> None:
-        self._app: "Application" = app
-        self._context_factory = context_factory
-        self._socket: Optional["web.WebSocketResponse"] = None
-        self._context: Optional[Dict[str, Any]] = None
-
-    async def _send_message(
+    async def send_message(
         self,
-        connection_context: "AIOHTTPConnectionContext",
         operation_id: Optional[str] = None,
         op_type: Optional[str] = None,
         payload: Optional[Any] = None,
@@ -100,32 +88,41 @@ class AIOHTTPSubscriptionHandler:
             message["type"] = op_type
         if payload is not None:
             message["payload"] = payload
-        await connection_context.send(json.dumps(message))
+        await self.send(json.dumps(message))
 
-    async def _send_error(
+    async def send_error(
         self,
-        connection_context: "AIOHTTPConnectionContext",
         operation_id: Optional[str],
         error: Exception,
         error_type: Optional[str] = None,
     ) -> None:
-        await self._send_message(
-            connection_context,
+        await self.send_message(
             operation_id,
             error_type if error_type in _ALLOWED_ERROR_TYPES else GQL_ERROR,
             {"message": str(error)},
         )
 
+    async def close(self, code: int) -> None:
+        await self._socket.close(code=code)
+
+
+class AIOHTTPSubscriptionHandler:
+    def __init__(self, app: "Application", context_factory: Callable) -> None:
+        self._app: "Application" = app
+        self._context_factory = context_factory
+        self._socket: Optional["web.WebSocketResponse"] = None
+        self._context: Optional[Dict[str, Any]] = None
+
     async def _on_connection_init(
         self, connection_context: "AIOHTTPConnectionContext", operation_id: str
     ) -> None:
         try:
-            return await self._send_message(
-                connection_context, op_type=GQL_CONNECTION_ACK
+            return await connection_context.send_message(
+                op_type=GQL_CONNECTION_ACK
             )
         except Exception as e:  # pylint: disable=broad-except
-            await self._send_error(
-                connection_context, operation_id, e, GQL_CONNECTION_ERROR
+            await connection_context.send_error(
+                operation_id, e, GQL_CONNECTION_ERROR
             )
             return await connection_context.close(1011)
 
@@ -153,8 +150,7 @@ class AIOHTTPSubscriptionHandler:
     ) -> None:
         params = _get_graphql_params(payload, self._context)
         if not isinstance(params, dict):
-            return await self._send_error(
-                connection_context,
+            return await connection_context.send_error(
                 operation_id,
                 Exception("Received invalid params."),
             )
@@ -170,17 +166,15 @@ class AIOHTTPSubscriptionHandler:
             async for result in iterator:
                 if not connection_context.has_operation(operation_id):
                     break
-                await self._send_message(
-                    connection_context, operation_id, GQL_DATA, result
+                await connection_context.send_message(
+                    operation_id, GQL_DATA, result
                 )
         except Exception:  # pylint: disable=broad-except
-            await self._send_error(
-                connection_context, operation_id, Exception("Internal Error")
+            await connection_context.send_error(
+                operation_id, Exception("Internal Error")
             )
 
-        await self._send_message(
-            connection_context, operation_id, GQL_COMPLETE
-        )
+        await connection_context.send_message(operation_id, GQL_COMPLETE)
 
     async def _on_stop(
         self, connection_context: "AIOHTTPConnectionContext", operation_id: str
@@ -208,8 +202,7 @@ class AIOHTTPSubscriptionHandler:
             return await self._on_stop(connection_context, operation_id)
         if op_type == GQL_CONNECTION_TERMINATE:
             return await self._on_connection_terminate(connection_context)
-        return await self._send_error(
-            connection_context,
+        return await connection_context.send_error(
             operation_id,
             Exception(f"Unhandled message type < {op_type} >."),
         )
@@ -225,7 +218,7 @@ class AIOHTTPSubscriptionHandler:
             else:
                 parsed_message = message
         except Exception as e:  # pylint: disable=broad-except
-            return await self._send_error(connection_context, None, e)
+            return await connection_context.send_error(None, e)
         return await self._process_message(connection_context, parsed_message)
 
     async def _on_close(
