@@ -18,6 +18,7 @@ from tartiflette_aiohttp._constants import (
     GQL_STOP,
     WS_PROTOCOL,
 )
+from tartiflette_aiohttp._keep_alive import KeepAliveHandler
 
 _ALLOWED_ERROR_TYPES = [GQL_CONNECTION_ERROR, GQL_ERROR]
 
@@ -117,9 +118,14 @@ class AIOHTTPSubscriptionHandler:
         self, connection_context: "AIOHTTPConnectionContext", operation_id: str
     ) -> None:
         try:
-            return await connection_context.send_message(
-                op_type=GQL_CONNECTION_ACK
-            )
+            await connection_context.send_message(op_type=GQL_CONNECTION_ACK)
+            keep_alive_interval = self._app["subscription_keep_alive_interval"]
+            if keep_alive_interval:
+                keep_alive = KeepAliveHandler(
+                    connection_context, keep_alive_interval
+                )
+                await keep_alive.start()
+            return None
         except Exception as e:  # pylint: disable=broad-except
             await connection_context.send_error(
                 operation_id, e, GQL_CONNECTION_ERROR
