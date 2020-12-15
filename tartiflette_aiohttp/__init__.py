@@ -5,7 +5,6 @@ from inspect import iscoroutine
 from typing import (
     Any,
     AsyncContextManager,
-    Awaitable,
     Callable,
     Dict,
     List,
@@ -46,10 +45,13 @@ def validate_and_compute_graphiql_option(
 def _set_subscription_ws_handler(
     app: "Application",
     subscription_ws_endpoint: Optional[str],
+    subscription_keep_alive_interval: Optional[int],
     context_factory: "AbstractAsyncContextManager",
 ) -> None:
     if not subscription_ws_endpoint:
         return
+
+    app["subscription_keep_alive_interval"] = subscription_keep_alive_interval
 
     app.router.add_route(
         "GET",
@@ -122,6 +124,7 @@ def register_graphql_handlers(
     executor_http_methods: List[str] = None,
     engine: Engine = None,
     subscription_ws_endpoint: Optional[str] = None,
+    subscription_keep_alive_interval: Optional[int] = None,
     graphiql_enabled: bool = False,
     graphiql_options: Optional[Dict[str, Any]] = None,
     engine_modules: Optional[
@@ -148,6 +151,7 @@ def register_graphql_handlers(
         executor_http_methods {list[str]} -- List of HTTP methods allowed on the endpoint (only GET and POST are supported) (default: {None})
         engine {Engine} -- An uncooked engine, or a create_engine coroutines (default: {None})
         subscription_ws_endpoint {Optional[str]} -- Path part of the URL the WebSocket GraphQL subscription endpoint will listen on (default: {None})
+        subscription_keep_alive_interval {Optional[int]} -- Number of seconds before each Keep Alive messages (default: {None})
         graphiql_enabled {bool} -- Determines whether or not we should handle a GraphiQL endpoint (default: {False})
         graphiql_options {dict} -- Customization options for the GraphiQL instance (default: {None})
         engine_modules: {Optional[List[Union[str, Dict[str, Union[str, Dict[str, str]]]]]]} -- Module to import (default:{None})
@@ -206,7 +210,10 @@ def register_graphql_handlers(
             raise Exception("Unsupported < %s > http method" % method)
 
     _set_subscription_ws_handler(
-        app, subscription_ws_endpoint, context_factory
+        app,
+        subscription_ws_endpoint,
+        subscription_keep_alive_interval,
+        context_factory,
     )
 
     _set_graphiql_handler(
