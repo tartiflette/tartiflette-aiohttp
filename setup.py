@@ -10,7 +10,7 @@ _TEST_REQUIRE = [
     "pylint==2.6.0",
     "xenon==0.7.1",
     "black==20.8b1",
-    "isort==5.6.4",
+    "isort==5.8.0",
     "async_generator==1.10;python_version=='3.6.*'",
 ]
 
