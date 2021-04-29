@@ -1,0 +1,29 @@
+version: 2
+updates:
+- package-ecosystem: pip
+  directory: "/"
+  schedule:
+    interval: weekly
+    time: "09:00"
+    timezone: Europe/Paris
+  open-pull-requests-limit: 10
+  reviewers:
+  - abusi
+  assignees:
+  - abusi
+  ignore:
+  - dependency-name: pytest-asyncio
+    versions:
+    - 0.15.0
+  - dependency-name: pylint
+    versions:
+    - 2.7.0
+    - 2.7.2
+    - 2.7.4
+  - dependency-name: pytest
+    versions:
+    - 6.2.1
+    - 6.2.2
+  - dependency-name: isort
+    versions:
+    - 5.7.0
