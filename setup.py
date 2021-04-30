@@ -9,7 +9,7 @@ _TEST_REQUIRE = [
     "pytz",
     "pylint==2.6.0",
     "xenon==0.7.1",
-    "black==20.8b1",
+    "black==21.4b2",
     "isort==5.6.4",
     "async_generator==1.10;python_version=='3.6.*'",
 ]
