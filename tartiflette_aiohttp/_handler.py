@@ -3,7 +3,7 @@ import logging
 
 from aiohttp import web
 
-from ._reponse_headers import get_response_headers
+from ._response_headers import get_response_headers
 
 logger = logging.getLogger(__name__)
 
