@@ -16,7 +16,7 @@ from tartiflette import Engine
 from tartiflette_aiohttp._context_factory import default_context_factory
 from tartiflette_aiohttp._graphiql import graphiql_handler
 from tartiflette_aiohttp._handler import Handlers, prepare_response
-from tartiflette_aiohttp._reponse_headers import set_response_headers
+from tartiflette_aiohttp._response_headers import set_response_headers
 from tartiflette_aiohttp._subscription_ws_handler import (
     AIOHTTPSubscriptionHandler,
 )
