@@ -135,11 +135,13 @@ class AIOHTTPSubscriptionHandler:
     async def _on_connection_terminate(
         self, connection_context: "AIOHTTPConnectionContext"
     ) -> None:
+        # pylint: disable=no-self-use
         await connection_context.close(1011)
 
     async def _unsubscribe(
         self, connection_context: "AIOHTTPConnectionContext", operation_id: str
     ) -> None:
+        # pylint: disable=no-self-use
         operation = connection_context.get_operation(operation_id)
         if operation is not None:
             task = create_task(operation.__anext__())

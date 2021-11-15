@@ -13,5 +13,6 @@ Contributors
 ------------
 
 * [@daveoconnor](https://github.com/daveoconnor)
+* [David Baumgold](https://github.com/singingwolfboy)
 * [@jugdizh](https://github.com/jugdizh)
 * [@Ultrabug](https://github.com/ultrabug)

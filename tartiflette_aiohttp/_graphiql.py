@@ -8,7 +8,9 @@ from aiohttp import web
 try:
     _TTFTT_AIOHTTP_DIR = os.path.dirname(__file__)
 
-    with open(os.path.join(_TTFTT_AIOHTTP_DIR, "_graphiql.html")) as tpl_file:
+    with open(
+        os.path.join(_TTFTT_AIOHTTP_DIR, "_graphiql.html"), encoding="UTF-8"
+    ) as tpl_file:
         _GRAPHIQL_TEMPLATE = tpl_file.read()
 except Exception as e:  # pylint: disable=broad-except
     _GRAPHIQL_TEMPLATE = ""
