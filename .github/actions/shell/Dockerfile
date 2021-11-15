@@ -22,11 +22,7 @@ RUN apt-get update && \
         git \
         make \
         shellcheck && \
-    curl -sL https://deb.nodesource.com/setup_10.x | bash - && \
-    apt-get install -y \
-        nodejs && \
-    npm install -g dockerfile_lint && \
-	apt-get clean -y && \
+    apt-get clean -y && \
     rm -rf /var/lib/apt/lists/*
 
 CMD ["make", "run"]
