@@ -202,12 +202,12 @@ def register_graphql_handlers(
                 method,
                 executor_http_endpoint,
                 partial(
-                    getattr(Handlers, "handle_%s" % method.lower()),
+                    getattr(Handlers, f"handle_{method.lower()}"),
                     context_factory=context_factory,
                 ),
             )
         except AttributeError:
-            raise Exception("Unsupported < %s > http method" % method)
+            raise Exception(f"Unsupported < {method} > http method")
 
     _set_subscription_ws_handler(
         app,
