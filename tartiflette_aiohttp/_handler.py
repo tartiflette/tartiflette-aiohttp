@@ -66,7 +66,7 @@ async def _get_params(req):
     return (req.query["query"], variables, req.query.get("operationName"))
 
 
-async def _post_params(req):
+async def _post_json_params(req):
     try:
         req_content = await req.json(loads=json.loads)
     except Exception:  # pylint: disable=broad-except
@@ -88,6 +88,91 @@ async def _post_params(req):
             )
 
     return (req_content["query"], variables, req_content.get("operationName"))
+
+
+def set_variables_from_part(file_field, variables, map, eager=False):
+    file_name = file_field.name
+    if file_name not in map:
+        raise BadRequestError(f"Invalid multipart request: file field {file_name} not in mapping")
+    dotpaths = map[file_name]
+    for dotpath in dotpaths:
+        if dotpath.count(".") == 1:
+            groupname, varname = dotpath.split(".")
+            if groupname != "variables":
+                raise BadRequestError(f"Multipart request {file_name} must set a variable")
+            variables[varname] = file_field  # do we need to read this into memory?
+        elif dotpath.count(".") == 2:
+            groupname, varname, varindex = dotpath.split(".")
+            if groupname != "variables":
+                raise BadRequestError(f"Multipart request {file_name} must set a variable")
+            try:
+                index = int(varindex)
+            except Exception as err:
+                raise BadRequestError(f"Multipart request {file_name} has invalid index") from err
+            variables[varname][index] = file_field
+        else:
+            raise BadRequestError(f"Multipart request {file_name} must be a valid dotpath")
+
+    return variables
+
+
+async def _post_multipart_params(req):
+    "See https://github.com/jaydenseric/graphql-multipart-request-spec"
+    reader = await req.multipart()
+    operations_part = await reader.next()
+    if not operations_part:
+        raise BadRequestError("Invalid multipart request: not enough parts")
+    if operations_part.name != "operations":
+        raise BadRequestError("Invalid multipart request: `operations` must be the first part")
+    try:
+        operations = await operations_part.json()
+    except Exception:
+        raise BadRequestError("Invalid multipart request: `operations` must be JSON")
+
+    # validate operations
+    if "query" not in operations:
+        raise BadRequestError('The mandatory "query" parameter is missing.')
+    if "variables" not in operations:
+        raise BadRequestError('The mandatory "variables" parameter is missing.')
+    variables = operations["variables"]
+    if not isinstance(variables, dict):
+        raise BadRequestError("Invalid multipart request: variables must be a mapping")
+
+    map_part = await reader.next()
+    if not map_part:
+        raise BadRequestError("Invalid multipart request: not enough parts")
+    if map_part.name != "map":
+        raise BadRequestError("Invalid multipart request: `map` must be the second part")
+    try:
+        map = await map_part.json()
+    except Exception:
+        raise BadRequestError("Invalid multipart request: `map` must be JSON")
+
+    # validate map
+    for key, values in map.items():
+        if not isinstance(values, list):
+            raise BadRequestError(f"Invalid multipart request: `map` value for {key} must be an array")
+        if not all(dotpath.count(".") in (1, 2) for dotpath in values):
+            raise BadRequestError(f"Invalid multipart request: `map` value for {key} must be an array of dotpaths")
+
+    # Now we need to create file-like objects and populate them into the
+    # `variables` dict. But because we are reading data in a stream, that
+    # means we need to eagerly read all the data into memory -- or almost all,
+    # since we can leave the last part unread and let the application handle that.
+    # If there's only one file, everything's fine!
+    for _ in range(len(map) - 1):
+        file_field = await reader.next()
+        if not file_field:
+            raise BadRequestError("Invalid multipart request: not enough parts")
+        variables = set_variables_from_part(file_field, variables, map, eager=True)
+
+    # the last one is not eager
+    file_field = await reader.next()
+    if not file_field:
+        raise BadRequestError("Invalid multipart request: not enough parts")
+    variables = set_variables_from_part(file_field, variables, map, eager=False)
+
+    return (operations["query"], variables, operations.get("operationName"))
 
 
 class Handlers:
@@ -112,4 +197,6 @@ class Handlers:
 
     @staticmethod
     async def handle_post(req, context_factory):
-        return await Handlers._handle(_post_params, req, context_factory)
+        if req.content_type == 'multipart/form-data':
+            return await Handlers._handle(_post_multipart_params, req, context_factory)
+        return await Handlers._handle(_post_json_params, req, context_factory)
