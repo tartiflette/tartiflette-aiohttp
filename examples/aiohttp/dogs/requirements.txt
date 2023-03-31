@@ -1,2 +1,2 @@
-redis==3.2.0
+redis==4.4.4
 tartiflette-aiohttp
