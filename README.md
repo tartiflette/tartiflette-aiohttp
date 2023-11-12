@@ -39,8 +39,8 @@ $ python main.py
 > Note: The server will be listening on the `/graphql` path by default.
 
 Send a request to your server
-```
-curl -v -d '{"query": "query { hello(name: "Chuck") }"}' -H "Content-Type: application/json" http://localhost:8080/graphql
+```bash
+curl -v -d '{"query": "query { hello(name: \"Chuck\") }"}' -H "Content-Type: application/json" http://localhost:8080/graphql
 ```
 
 ## Installation
